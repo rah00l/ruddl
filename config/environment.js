@@ -1,4 +1,7 @@
-var express    = require('express');
+var express = require('express');
+var mongooseAuth = require('mongoose-auth');
+
+require('./config-mongoose_oauth.js');
 
 app.configure(function(){
     var cwd = process.cwd();
@@ -13,5 +16,8 @@ app.configure(function(){
     app.use(express.cookieParser('secret'));
     app.use(express.session({secret: 'secret'}));
     app.use(express.methodOverride());
-    app.use(app.router);
+    //app.use(app.router);
+    app.use(express.methodOverride());
+  	app.use(mongooseAuth.middleware());
 });
+mongooseAuth.helpExpress(app);

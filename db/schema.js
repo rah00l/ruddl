@@ -5,5 +5,6 @@ define('User', function () {
 });
 
 var User = describe('User', function () {
-    property('feed', String);
+	property('feed', String);
 });
+ 
