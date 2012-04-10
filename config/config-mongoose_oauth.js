@@ -31,14 +31,6 @@ UserSchema.plugin(mongooseAuth, {
       consumerSecret: conf.twit.consumerSecret,
       redirectPath: '/'
     }
-  },
-  github: {
-    everyauth: {
-      myHostname: 'http://ubuntu:3000',
-      appId: conf.github.appId,
-      appSecret: conf.github.appSecret,
-      redirectPath: '/'
-    }
   }
 });
 User = mongoose.model('User', UserSchema);
