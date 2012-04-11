@@ -18,7 +18,7 @@ UserSchema.plugin(mongooseAuth, {
   },
   facebook: {
     everyauth: {
-      myHostname: 'http://ubuntu:3000',
+      myHostname: 'http://ruddl.com',
       appId: conf.fb.appId,
       appSecret: conf.fb.appSecret,
       redirectPath: '/'
@@ -26,7 +26,7 @@ UserSchema.plugin(mongooseAuth, {
   },
   twitter: {
     everyauth: {
-      myHostname: 'http://ubuntu:3000',
+      myHostname: 'http://ruddl.com',
       consumerKey: conf.twit.consumerKey,
       consumerSecret: conf.twit.consumerSecret,
       redirectPath: '/'
