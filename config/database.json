@@ -1,7 +1,17 @@
 { "development":
-  { "driver":   "memory"
+  { "driver":   "mongoose"
+  , "url":      "mongodb://localhost/test"
   }
 , "test":
-  { "driver":   "memory"
+  { "driver":   "mongoose"
+  , "url":      "mongodb://localhost/test"
+  }
+, "staging":
+  { "driver":   "mongoose"
+  , "url":      "mongodb://localhost/test"
+  }
+, "production":
+  { "driver":   "mongoose"
+  , "url":      "mongodb://localhost/test"
   }
 }

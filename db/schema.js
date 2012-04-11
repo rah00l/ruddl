@@ -1,10 +1,11 @@
-define('User', function () {
-    property('email', String, { index: true });
-    property('password', String);
-    property('activated', Boolean, {default: false});
-});
 
-var User = describe('User', function () {
-	property('feed', String);
+customSchema(function () {
+    var mongoose = require('mongoose');
+    mongoose.connect('mongodb://localhost/test');
+
+    var Schema = mongoose.Schema, ObjectId = Schema.ObjectId;
+
+    var User = describe('User', function () {
+
+	});
 });
- 
