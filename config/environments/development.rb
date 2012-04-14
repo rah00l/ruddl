@@ -39,8 +39,12 @@ end
 Rails.application.config.middleware.use OmniAuth::Builder do
    # ALWAYS RESTART YOUR SERVER IF YOU MAKE CHANGES TO THESE SETTINGS!
    
+   # load certificates
+   require 'openid/fetchers'
+   OpenID.fetcher.ca_file = "#{Rails.root}/config/ca-bundle.crt"
+
    # providers with id/secret, you need to sign up for their services (see below) and enter the parameters here
-   provider :facebook, '200738486708790', '05c0869cf1b6233fa5c236962199fd01'
+   provider :facebook, '200738486708790', '05c0869cf1b6233fa5c236962199fd01', {:client_options => {:ssl => {:ca_path => "/etc/ssl/certs"}}}
    provider :twitter, 'xKDkWPIfPKSHVDgvilw', 'n8SnNTfNxkS8TN86n6izfGDbQel9X1BCsmXhun44pe4'
    
    # Sign-up urls for Facebook, Twitter, and Github
