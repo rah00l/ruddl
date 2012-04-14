@@ -65,3 +65,16 @@ Ruddl::Application.configure do
   # with SQLite, MySQL, and PostgreSQL)
   # config.active_record.auto_explain_threshold_in_seconds = 0.5
 end
+
+Rails.application.config.middleware.use OmniAuth::Builder do
+   # ALWAYS RESTART YOUR SERVER IF YOU MAKE CHANGES TO THESE SETTINGS!
+   
+   # providers with id/secret, you need to sign up for their services (see below) and enter the parameters here
+   provider :facebook, '200738486708790', '05c0869cf1b6233fa5c236962199fd01'
+   provider :twitter, 'xKDkWPIfPKSHVDgvilw', 'n8SnNTfNxkS8TN86n6izfGDbQel9X1BCsmXhun44pe4'
+   
+   # Sign-up urls for Facebook, Twitter, and Github
+   # https://developers.facebook.com/setup
+   # https://github.com/account/applications/new
+   # https://developer.twitter.com/apps/new
+end
