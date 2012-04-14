@@ -75,4 +75,31 @@ def create
     flash[:error] = 'Error while authenticating via ' + service_route.capitalize + '. The service did not return valid data.'
     redirect_to signin_path
   end
+
+def newaccount
+  if params[:commit] == "Cancel"
+    session[:authhash] = nil
+    session.delete :authhash
+    redirect_to root_url
+  else  # create account
+    @newuser = User.new
+    @newuser.name = session[:authhash][:name]
+    @newuser.email = session[:authhash][:email]
+    @newuser.services.build(:provider => session[:authhash][:provider], :uid => session[:authhash][:uid], :uname => session[:authhash][:name], :uemail => session[:authhash][:email])
+    
+    if @newuser.save!
+      # signin existing user
+      # in the session his user id and the service id used for signing in is stored
+      session[:user_id] = @newuser.id
+      session[:service_id] = @newuser.services.first.id
+      
+      flash[:notice] = 'Your account has been created and you have been signed in!'
+      redirect_to root_url
+    else
+      flash[:error] = 'This is embarrassing! There was an error while creating your account from which we were not able to recover.'
+      redirect_to root_url
+    end  
+  end
+end
+
 end
