@@ -1,4 +1,0 @@
-== Welcome to ruddl
-
-ruddl is an experimental app written using Ruby on Rails.
-
