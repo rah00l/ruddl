@@ -1,5 +1,6 @@
 class MyApp < Sinatra::Base
   get "/" do
-    "Hello Bundler"
+    rss = SimpleRSS.parse open('http://slashdot.org/index.rdf')
+    rss.channel.title
   end
 end
