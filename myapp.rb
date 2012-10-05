@@ -3,12 +3,12 @@ require "sinatra/reloader"
 
 class MyApp < Sinatra::Base
   configure :development do
+    enable :logging, :dump_errors, :raise_errors
     register Sinatra::Reloader
   end
 
   get "/" do
-    feed = SimpleRSS.parse open('http://slashdot.org/index.rdf')
-    #http://snippets.aktagon.com/snippets/164-How-to-use-Ruby-and-SimpleRSS-to-parse-RSS-and-Atom-feeds-
+    @feed = SimpleRSS.parse open('http://news.ycombinator.com/rss')
     erb :index
   end
 end
