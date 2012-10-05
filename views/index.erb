@@ -1,4 +1,4 @@
 <h1><%= @feed.title %></h1>
-<% @feed.items.each do |item| %>
-    <a target="_blank" href="<%= item.link %>"><%= item.title %></a><br>
+<% @docs.each do |doc| %>
+    <h1><%= doc.title %></h1>
 <% end %>
