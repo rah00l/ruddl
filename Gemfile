@@ -2,4 +2,6 @@ source 'https://rubygems.org'
 gem "sinatra"
 gem "sinatra-contrib"
 gem "simple-rss"
-gem "pismo"
+gem "ruby-readability"
+gem "mini_magick"
+gem "redis"
