@@ -1,6 +1,12 @@
-<h1><%= @feed.title %></h1>
+<h2><%= @feed.title %></h2>
+<div id="feed">
 <% @docs.each do |doc| %>
-    <h3><%= doc.title %></h3>
-    <%= doc.images %>
-    <%= doc.content.encode("UTF-8") %><hr>
+    <div class="one-third column item">
+        <h3><%= doc.title %></h3>
+        <% if doc.images[0] %>
+            <img src="<%= doc.images[0] %>"/>
+        <% end %>
+        <%= doc.content.encode("UTF-8") %>
+    </div>
 <% end %>
+</div>
