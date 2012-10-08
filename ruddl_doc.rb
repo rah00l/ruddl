@@ -1,17 +1,19 @@
 class RuddlDoc
-  attr_accessor :title, :images, :content
+  attr_accessor :key, :title, :images, :content, :snippet
 
-  def initialize(title, images, content)
+  def initialize(key, title, images, content, snippet)
+    @key = key
     @title = title
     @images = images
     @content = content
+    @snippet = snippet
   end
 
   def marshal_dump
-    [@title, @images, @content]
+    [@key, @title, @images, @content, @snippet]
   end
 
   def marshal_load array
-    @title, @images, @content = array
+    @key, @title, @images, @content, @snippet = array
   end
 end

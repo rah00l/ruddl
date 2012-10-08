@@ -1,12 +1,14 @@
-<h2><%= @feed.title %></h2>
-<div id="feed">
-<% @docs.each do |doc| %>
-    <div class="one-third column item">
-        <h3><%= doc.title %></h3>
-        <% if doc.images[0] %>
-            <img src="<%= doc.images[0] %>"/>
+<div class="leftside">
+    <ul>
+        <% @docs.each do |doc| %>
+            <li><a onclick="javascript:showRight('<%= doc.key %>');return false;" href="#"><%= doc.title %></a></li>
         <% end %>
-        <%= doc.content.encode("UTF-8") %>
+    </ul>
+</div>
+
+<% @docs.each do |doc| %>
+    <div id="<%= doc.key %>" class="rightside">
+      <%= doc.content.encode("UTF-8") %>
     </div>
 <% end %>
-</div>
+

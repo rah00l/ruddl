@@ -4,7 +4,7 @@ require 'simple-rss'
 require 'open-uri'
 require 'readability'
 require 'redis'
-require 'base64'
+require 'digest'
 
 Bundler.require
 
