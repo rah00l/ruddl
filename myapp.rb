@@ -10,7 +10,7 @@ class MyApp < Sinatra::Base
   end
 
   get "/" do
-    @feed = JSON.parse open('http://hndroidapi.appspot.com/news/format/json/page/?appid=&callback=').read
+    @feed = JSON.parse(open('http://hndroidapi.appspot.com/news/format/json/page/?appid=&callback=').read)
     @feed['items'].each do |item|
       begin
         key = Digest::MD5.hexdigest(item['url'])
@@ -18,10 +18,11 @@ class MyApp < Sinatra::Base
           doc = Marshal.load(redis.get(key))
         elsif
           source = open(item['url']).read
-          rdoc = Readability::Document.new(source, :tags => %w[div p ul li img a h1 h2 h3 h4 h5 h6 table tbody tr th td blockquote], :attributes => %w[src href target colspan rowspan], :remove_empty_nodes => false)
+          rdoc = Readability::Document.new(source, :tags => %w[div p ul li img a header h1 h2 h3 h4 h5 h6 table tbody tr th td blockquote strong pre], :attributes => %w[src alt width height style href target colspan rowspan], :remove_empty_nodes => false)
           doc = RuddlDoc.new(key, rdoc.images, rdoc.content)
           redis.set(key, Marshal.dump(doc))
         end
+        item['key'] = key
         item['content'] = doc.content
         item['images'] = doc.images
       rescue Exception => e
@@ -29,5 +30,13 @@ class MyApp < Sinatra::Base
       end
     end
     erb :index
+  end
+
+  get "/:key" do
+    if(redis.exists(params[:key]))
+      content_type :json
+      doc = Marshal.load(redis.get(params[:key]))
+      doc.to_json
+    end
   end
 end

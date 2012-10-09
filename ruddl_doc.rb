@@ -1,4 +1,6 @@
-class RuddlDoc
+require './json_able'
+
+class RuddlDoc < JSONable
   attr_accessor :key, :images, :content
 
   def initialize(key, images, content)

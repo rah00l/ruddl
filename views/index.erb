@@ -1,26 +1,30 @@
-<div id="itemList">
-
-<div id="items" class="scrollbar">
-  <% @feed['items'].each do |item| %>
-    <div class="item">
-      <h2><a href="<%= item['key'] %>"><%= item['title'] %></a></h2>
-      <!--<div class="detail">
-        <div class="right">
-          <span class="site-link"><a href="http://www.spacex.com/press.php?page=20121008" target="_blank" title="Go to page" class="go_to_site"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAHagAAB2oBHPCRvgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEUSURBVCiRjdKhTsRAEAbgfzbbhJ4hdRgSBOIkKAQKus3aCw9AwhuUJ7lzeF4A3UwCkuBOEQwGDLlU17TdxTSlbKeFdbud72+7M+S9h7SMMSsiegCwZeZTqUZJh9baJRHddduTLMvW/8LW2qVz7gnAweA4lwJ+4Qk4GdBjAb5GUXTIzMTM5Jw7CwPUzBt3TdPEfaFSN+EXUJqmq+5yhvAlSZLzsiyPtdamqqr7OI4/AewPajZkjBn1ioiu6rp+1lq/A1h47x+J6DKsUwC2Av7QWh8BWHT7EQTwpboB2AQPdgD2BPADlbpQAMDMt0LALCyK4q1v1TCgbdscwPUcBAAKZ7trQ/4XBITxnPiFERSxECBCAPgGCRN7Neh4E2EAAAAASUVORK5CYII=" alt="Go to Site" height="15" width="15"></a></span>
-          <span class="comments"><a href="http://news.ycombinator.com/item?id=4628591" title="View Comments"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAACcAAAAnABWmOn1AAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAACYSURBVDiN5dKxDcIwEEbhz6lRJmAGatp0jEBPzwaZgIYxWACJcSiyQARlxNGYAkRQAumw9KSTLL/75TsoUaNBjKTJb0u5GCt4pYbzBKJzysXPp5hC8geibgJPV+A4gegIFVrf71CLKkWElNIMa8wzm9zpgj1uPUkaHCLiKiKewDJ36rB6ve/j09S2EXEa/EtvEi2wG5rkwR361bMu7TuDYwAAAABJRU5ErkJggg==" height="15" width="18" alt="View Comments"></a></span>
-        </div>
-        <span class="site">www.spacex.com</span>
-      </div>-->
-    </div>
-  <% end %>
+<div class="four columns clearfix">
+  <ul id="items">
+    <% @feed['items'].each do |item| %>
+          <li><a class="item" href="/<%= item['key'] %>"><%= item['title'] %></a></li>
+    <% end %>
+  </ul>
 </div>
+<div class="eight columns clearfix">
+  <div id="itemDetail">
 
+  </div>
 </div>
+<script type="text/javascript">
+    $(function() {
+        $(".item").click(function() {
+            $.ajax({
+                url: $(this).attr('href')
+            }).done(function(data) {
+                $("#itemDetail").html(data['@content']);
+            });
 
-<div id="itemDetail">
-  <% @feed['items'].each do |doc| %>
-      <div id="<%= doc['key'] %>" class="rightside">
-        <%= doc['content'] %>
-      </div>
-  <% end %>
-</div>
+            return false;
+        });
+    });
+</script>
+
+
+
+
+
