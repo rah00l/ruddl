@@ -1,10 +1,10 @@
 require 'rubygems'
 require 'bundler'
-require 'simple-rss'
 require 'open-uri'
 require 'readability'
 require 'redis'
 require 'digest'
+require 'json'
 
 Bundler.require
 

@@ -1,37 +1,26 @@
-
 <div id="itemList">
-<div id="itemListToolbar">
-  <div id="links">
-    <a href="http://news.ycombinator.com" id="top" class="active">Top</a>
-    <a href="http://news.ycombinator.com/newest" id="newest">New</a>
-        <span class="right">
-          <a id="refresh" href="#refresh" title="Refresh">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAACxQAAAsUBidZ/7wAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAFsSURBVDiNrdW/SlxBFMfxz+iKpBIUIr6CGNgEK2OdIPgAxmewEiwSWAstbNJoY2kbbQKp8gohiopFBCsLm5BGCxdjcFLcUcfrvbvCOnBg/pzznTN3fnNuiDGqaiGEBsYxmSzgAPs4ijG2K2JWxBgfGAawjEvEGrvCCgazuDU8gr3BYQdQ2X5hGp/v5jLYe1xnzn9SFrMYwyje4RN+126SYMM4yxZ28LL8ObLNR7DVCfglm1yvA5WgGzVZepsNjvGiCyhgs+7IDUxlN79YJYdSa2EGp3UO24l+g6GnHLeT9SlECycxxvMu2XVtfRhK/YteYbfAvdR/FUIYeA7gbuoPYuI5gD+z8cdegRSZHbnX0odebvlWrK/xNwHPMf+ElzKHhUpgcmh5qPpviurTyHwaaOJr5rdUB+xX1MGrEriNH8napbVrrCI8AmbgiXRR3WrhPprl+FD1Cwgh9Cvq42RmFJrdU0jte4zxXzn2P7yEs+zvnAKWAAAAAElFTkSuQmCC" alt="Refresh" height="20" width="20">
-          </a>
-        </span>
-  </div>
-</div>
 
-<div id="items" class="scrollbar" style="height: 1045px; ">
-  <% @docs.each do |doc| %>
+<div id="items" class="scrollbar">
+  <% @feed['items'].each do |item| %>
     <div class="item">
-      <h2><a href="<%= doc.key %>"><%= doc.title %></a></h2>
-      <div class="detail">
+      <h2><a href="<%= item['key'] %>"><%= item['title'] %></a></h2>
+      <!--<div class="detail">
         <div class="right">
           <span class="site-link"><a href="http://www.spacex.com/press.php?page=20121008" target="_blank" title="Go to page" class="go_to_site"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAHagAAB2oBHPCRvgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEUSURBVCiRjdKhTsRAEAbgfzbbhJ4hdRgSBOIkKAQKus3aCw9AwhuUJ7lzeF4A3UwCkuBOEQwGDLlU17TdxTSlbKeFdbud72+7M+S9h7SMMSsiegCwZeZTqUZJh9baJRHddduTLMvW/8LW2qVz7gnAweA4lwJ+4Qk4GdBjAb5GUXTIzMTM5Jw7CwPUzBt3TdPEfaFSN+EXUJqmq+5yhvAlSZLzsiyPtdamqqr7OI4/AewPajZkjBn1ioiu6rp+1lq/A1h47x+J6DKsUwC2Av7QWh8BWHT7EQTwpboB2AQPdgD2BPADlbpQAMDMt0LALCyK4q1v1TCgbdscwPUcBAAKZ7trQ/4XBITxnPiFERSxECBCAPgGCRN7Neh4E2EAAAAASUVORK5CYII=" alt="Go to Site" height="15" width="15"></a></span>
           <span class="comments"><a href="http://news.ycombinator.com/item?id=4628591" title="View Comments"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAACcAAAAnABWmOn1AAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAACYSURBVDiN5dKxDcIwEEbhz6lRJmAGatp0jEBPzwaZgIYxWACJcSiyQARlxNGYAkRQAumw9KSTLL/75TsoUaNBjKTJb0u5GCt4pYbzBKJzysXPp5hC8geibgJPV+A4gegIFVrf71CLKkWElNIMa8wzm9zpgj1uPUkaHCLiKiKewDJ36rB6ve/j09S2EXEa/EtvEi2wG5rkwR361bMu7TuDYwAAAABJRU5ErkJggg==" height="15" width="18" alt="View Comments"></a></span>
         </div>
         <span class="site">www.spacex.com</span>
-      </div>
+      </div>-->
     </div>
   <% end %>
 </div>
+
 </div>
 
 <div id="itemDetail">
-  <% @docs.each do |doc| %>
-      <div id="<%= doc.key %>" class="rightside">
-        <%= doc.content.encode("UTF-8") %>
+  <% @feed['items'].each do |doc| %>
+      <div id="<%= doc['key'] %>" class="rightside">
+        <%= doc['content'] %>
       </div>
   <% end %>
 </div>
