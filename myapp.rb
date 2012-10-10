@@ -11,7 +11,7 @@ class MyApp < Sinatra::Base
 
   get "/" do
     @feed = JSON.parse(open('http://hndroidapi.appspot.com/news/format/json/page/?appid=&callback=').read)
-    @feed['items'].each do |item|
+    @feed['items'].each_with_index do |item, counter|
       begin
         key = Digest::MD5.hexdigest(item['url'])
         if(redis.exists(key))
@@ -25,6 +25,7 @@ class MyApp < Sinatra::Base
         item['key'] = key
         item['content'] = doc.content
         item['images'] = doc.images
+        puts counter
       rescue Exception => e
         puts e.message
       end
