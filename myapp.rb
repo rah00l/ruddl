@@ -10,11 +10,6 @@ class MyApp < Sinatra::Base
   end
 
   configure :production do
-    uri = URI.parse(ENV["REDISTOGO_URL"])
-    redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-  end
-
-  configure :production do
     uri = URI.parse(URI.encode(ENV["REDISTOGO_URL"]))
     redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
   end
