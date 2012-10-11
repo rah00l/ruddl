@@ -2,11 +2,16 @@ require "sinatra/base"
 require "sinatra/reloader"
 
 class MyApp < Sinatra::Base
-  redis = Redis.new
 
   configure :development, :test do
     enable :logging, :dump_errors, :raise_errors
     register Sinatra::Reloader
+    redis = Redis.new
+  end
+
+  configure :production do
+    uri = URI.parse(ENV["REDISTOGO_URL"])
+    redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
   end
 
   configure :production do
