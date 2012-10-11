@@ -21,7 +21,7 @@ class MyApp < Sinatra::Base
       begin
         key = Digest::MD5.hexdigest(item['url'])
         puts key
-        puts '#{counter}: #{item["url"]} => #{key}'
+        puts "#{counter}: #{item['url']} => #{key}"
         if(redis.exists(key))
           doc = Marshal.load(redis.get(key))
         elsif
