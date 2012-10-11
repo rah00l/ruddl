@@ -4,9 +4,14 @@ require "sinatra/reloader"
 class MyApp < Sinatra::Base
   redis = Redis.new
 
-  configure :development do
+  configure :development, :test do
     enable :logging, :dump_errors, :raise_errors
     register Sinatra::Reloader
+  end
+
+  configure :production do
+    uri = URI.parse(URI.encode(ENV["REDISTOGO_URL"]))
+    redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
   end
 
   get "/" do
@@ -14,6 +19,8 @@ class MyApp < Sinatra::Base
     @feed['items'].each_with_index do |item, counter|
       begin
         key = Digest::MD5.hexdigest(item['url'])
+        puts key
+        puts '#{counter}: #{item["url"]} => #{key}'
         if(redis.exists(key))
           doc = Marshal.load(redis.get(key))
         elsif
@@ -25,7 +32,6 @@ class MyApp < Sinatra::Base
         item['key'] = key
         item['content'] = doc.content
         item['images'] = doc.images
-        puts counter
       rescue Exception => e
         puts e.message
       end
