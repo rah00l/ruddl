@@ -1,7 +1,9 @@
 <div class="four columns clearfix">
   <ul id="items">
     <% @feed['items'].each do |item| %>
-          <li><a class="item" href="#/<%= item['key'] %>"><%= item['title'] %></a></li>
+          <li><a class="item" href="#/<%= item['key'] %>"><%= item['title'] %></a>
+             - <%= item['score'] %>
+          </li>
     <% end %>
   </ul>
 </div>

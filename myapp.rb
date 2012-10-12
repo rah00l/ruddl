@@ -16,7 +16,7 @@ class MyApp < Sinatra::Base
   end
 
   get "/" do
-    @feed = JSON.parse(open('http://hndroidapi.appspot.com/news/format/json/page/?appid=&callback=').read)
+    @feed = Siren.parse(open('http://hndroidapi.appspot.com/news/format/json/page/?appid=&callback=').read)
     @feed['items'].each_with_index do |item, counter|
       begin
         key = Digest::MD5.hexdigest(item['url'])
@@ -33,6 +33,7 @@ class MyApp < Sinatra::Base
         item['key'] = key
         item['content'] = doc.content
         item['images'] = doc.images
+        item['score'] = item['score'].gsub(' points','')
       rescue Exception => e
         puts e.message
       end
