@@ -1,29 +1,54 @@
-/* Artfully masterminded by ZURB  */
+#container {
+    background: #FFF;
+    padding: 5px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    clear: both;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
 
-/* -------------------------------------------------- 
-   Table of Contents
------------------------------------------------------
-:: Shared Styles
-:: Page Name 1
-:: Page Name 2
-*/
+.centered { margin: 0 auto; }
 
+.box {
+    margin: 5px;
+    padding: 5px;
+    background: #D8D5D2;
+    font-size: 11px;
+    line-height: 1.4em;
+    float: left;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
 
-/* -----------------------------------------
-   Shared Styles
------------------------------------------ */
+.box h2 {
+    font-size: 14px;
+    font-weight: 200;
+}
 
+.box img {
+    display: block;
+}
 
+.rtl .box {
+    float: right;
+    text-align: right;
+    direction: rtl;
+}
 
-/* -----------------------------------------
-   Page Name 1
------------------------------------------ */
-
-
-
-
-/* -----------------------------------------
-   Page Name 2
------------------------------------------ */
-
-
+div.description{
+    position:absolute; /* absolute position (so we can position it where we want)*/
+    bottom:0px; /* position will be on bottom */
+    left:0px;
+    background-color:white;
+    color:white;
+    opacity:0.8; /* transparency */
+    filter:alpha(opacity=80); /* IE transparency */
+}
+p.description_content{
+    padding:10px;
+    margin:0px;
+    font-weight: bold;
+}

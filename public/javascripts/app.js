@@ -48,13 +48,11 @@
 })(jQuery, this);
 
 $(function() {
-    $(".item").click(function() {
-        $.ajax({
-            url: $(this).attr('href').replace('#','')
-        }).done(function(data) {
-            $("#itemDetail").html(data['@content']);
-        });
+    var $container = $('#container');
 
-        return false;
+    $container.imagesLoaded( function(){
+        $container.masonry({
+            itemSelector : '.box'
+        });
     });
 });

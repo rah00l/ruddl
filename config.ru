@@ -5,7 +5,6 @@ require 'readability'
 require 'redis'
 require 'digest'
 require 'json'
-require 'siren'
 
 Bundler.require
 

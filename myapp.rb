@@ -16,36 +16,27 @@ class MyApp < Sinatra::Base
   end
 
   get "/" do
-    @feed = Siren.parse(open('http://hndroidapi.appspot.com/news/format/json/page/?appid=&callback=').read)
-    @feed['items'].each_with_index do |item, counter|
+    @feed = JSON.parse(open("http://www.reddit.com/hot.json", "User-Agent" => "ruddl by /u/jesalg").read)
+    @ruddl = Array.new
+    @feed['data']['children'].each_with_index do |item, counter|
       begin
-        key = Digest::MD5.hexdigest(item['url'])
-        puts key
-        puts "#{counter}: #{item['url']} => #{key}"
-        if(redis.exists(key))
-          doc = Marshal.load(redis.get(key))
-        elsif
-          source = open(item['url']).read
-          rdoc = Readability::Document.new(source, :tags => %w[div p ul li img a header h1 h2 h3 h4 h5 h6 table tbody tr th td blockquote strong pre], :attributes => %w[src alt width height style href target colspan rowspan], :remove_empty_nodes => false)
-          doc = RuddlDoc.new(key, rdoc.images, rdoc.content)
-          redis.set(key, Marshal.dump(doc))
+        if(item['data']['domain'].include? 'imgur')
+          host = "http://i.imgur.com"
+          image = URI(item['data']['url'])
+          ext = (File.extname(image.path).length == 0) ? '.jpg' : ''
+          @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],URI.join(host,image.path+ext),item['data']['url']))
+        elsif(item['data']['domain'].include? 'quickmeme')
+          host = "http://i.qkme.me"
+          image = URI(item['data']['url'])
+          ext = '.jpg'
+          @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],URI.join(host,image.path.gsub("/meme/", "").gsub("/","")+ext),item['data']['url']))
+        elsif(item['data']['domain'].include? 'youtube')
+          @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],item['data']['media']['oembed']['thumbnail_url'],item['data']['url']))
         end
-        item['key'] = key
-        item['content'] = doc.content
-        item['images'] = doc.images
-        item['score'] = item['score'].gsub(' points','')
       rescue Exception => e
         puts e.message
       end
     end
     erb :index
-  end
-
-  get "/:key" do
-    if(redis.exists(params[:key]))
-      content_type :json
-      doc = Marshal.load(redis.get(params[:key]))
-      doc.to_json
-    end
   end
 end
