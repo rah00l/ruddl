@@ -16,26 +16,37 @@ class MyApp < Sinatra::Base
   end
 
   get "/" do
-    @feed = JSON.parse(open("http://www.reddit.com/hot.json", "User-Agent" => "ruddl by /u/jesalg").read)
+    key = 'ruddl'
     @ruddl = Array.new
-    @feed['data']['children'].each_with_index do |item, counter|
-      begin
-        if(item['data']['domain'].include? 'imgur')
-          host = "http://i.imgur.com"
-          image = URI(item['data']['url'])
-          ext = (File.extname(image.path).length == 0) ? '.jpg' : ''
-          @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],URI.join(host,image.path+ext),item['data']['url']))
-        elsif(item['data']['domain'].include? 'quickmeme')
-          host = "http://i.qkme.me"
-          image = URI(item['data']['url'])
-          ext = '.jpg'
-          @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],URI.join(host,image.path.gsub("/meme/", "").gsub("/","")+ext),item['data']['url']))
-        elsif(item['data']['domain'].include? 'youtube')
-          @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],item['data']['media']['oembed']['thumbnail_url'],item['data']['url']))
+    if(redis.exists(key))
+        @ruddl = Marshal.load(redis.get(key))
+    else
+      @feed = JSON.parse(open("http://www.reddit.com/hot.json", "User-Agent" => "ruddl by /u/jesalg").read)
+      @feed['data']['children'].each_with_index do |item, counter|
+        begin
+          if(item['data']['domain'].include? 'imgur')
+            host = "http://i.imgur.com"
+            image = URI(item['data']['url']).path
+            if(item['data']['url'].include? 'imgur.com/a/')
+              album_json = JSON.parse(open("http://api.imgur.com/2/album/"+image.gsub('/a/','')+".json").read)
+              image = album_json['album']['images'][0]['image']['hash']
+            end
+            ext = (File.extname(image).length == 0) ? '.jpg' : ''
+            @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],URI.join(host,image+ext),item['data']['url']))
+          elsif(item['data']['domain'].include? 'quickmeme')
+            host = "http://i.qkme.me"
+            image = URI(item['data']['url'])
+            ext = '.jpg'
+            @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],URI.join(host,image.path.gsub("/meme/", "").gsub("/","")+ext),item['data']['url']))
+          elsif(item['data']['domain'].include? 'youtube')
+            @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],item['data']['media']['oembed']['thumbnail_url'],item['data']['url']))
+          end
+        rescue Exception => e
+          puts e.message
         end
-      rescue Exception => e
-        puts e.message
       end
+      redis.set(key, Marshal.dump(@ruddl))
+      redis.expire(key, 60)
     end
     erb :index
   end
