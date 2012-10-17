@@ -20,10 +20,6 @@
     font-weight: 200;
 }
 
-.box img {
-    display: block;
-}
-
 .rtl .box {
     float: right;
     text-align: right;
@@ -39,12 +35,50 @@ div.description{
     opacity:0.8; /* transparency */
     filter:alpha(opacity=80); /* IE transparency */
 }
-p.description_content{
-    padding:10px;
-    margin:0px;
-    font-weight: bold;
+
+@media only screen and (min-width : 1200px) {
+    /* style rules for desktops and laptops with smaller screens,
+     again only added if the rules here conflict with those at the top
+     of the stylesheet */
+    .box img {
+        display: block;
+        width: 350px;
+    }
+
+    p.description_content{
+        padding:10px;
+        margin:0px;
+        font-weight: bold;
+    }
+}
+@media only screen and (min-width : 768px) and (max-width : 1024px) {
+    /* iPads, most other tablets */
+    .box img {
+        display: block;
+        width: 250px;
+    }
+
+    p.description_content{
+        padding:10px;
+        margin:0px;
+        font-weight: bold;
+    }
+}
+@media only screen and (max-width : 480px) {
+    /* most smartphones, including iPhones */
+    .box img {
+        display: block;
+        width: 150px;
+    }
+
+    p.description_content{
+        padding:10px;
+        margin:0px;
+        font-weight: normal;
+    }
 }
 
+/** FLIPS **/
 
 .panel {
     -webkit-perspective: 600px;
