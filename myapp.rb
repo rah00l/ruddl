@@ -21,6 +21,7 @@ class MyApp < Sinatra::Base
     if(redis.exists(key))
         @ruddl = Marshal.load(redis.get(key))
     else
+      media_ext = ['jpg','jpeg','gif']
       @feed = JSON.parse(open("http://www.reddit.com/hot.json", "User-Agent" => "ruddl by /u/jesalg").read)
       @feed['data']['children'].each_with_index do |item, counter|
         begin
@@ -33,13 +34,15 @@ class MyApp < Sinatra::Base
             end
             ext = (File.extname(image).length == 0) ? '.jpg' : ''
             @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],URI.join(host,image+ext),item['data']['url']))
-          elsif(item['data']['domain'].include? 'quickmeme')
+          elsif(item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
             host = "http://i.qkme.me"
             image = URI(item['data']['url'])
             ext = '.jpg'
             @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],URI.join(host,image.path.gsub("/meme/", "").gsub("/","")+ext),item['data']['url']))
           elsif(item['data']['domain'].include? 'youtube')
             @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],item['data']['media']['oembed']['thumbnail_url'],item['data']['url']))
+          elsif(item['data']['url'] =~ /#{media_ext.map{ |m| Regexp.escape m}.join('|')}/)
+            @ruddl.push(RuddlDoc.new(item['data']['id'],item['data']['title'],item['data']['url'],item['data']['url']))
           end
         rescue Exception => e
           puts e.message
