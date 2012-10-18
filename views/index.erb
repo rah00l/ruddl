@@ -1,14 +1,10 @@
-<div class="twelve columns clearfix">
-  <div id="container">
-      <% @ruddl.each do |doc| %>
-        <div class="box panel">
-          <a href="<%= doc.link %>" target="_blank"><img src="<%= doc.image %>"/></a>
-            <div class='description'>
-            <p class='description_content'>
-              <a href="<%= doc.premalink %>" target="_blank"><%= doc.title %></a>
-            </p>
-          </div>
-        </div>
-      <% end %>
+<% @ruddl.each do |doc| %>
+<div class="box panel">
+  <a href="<%= doc.link %>" target="_blank"><img src="<%= doc.image %>"/></a>
+    <div class='description'>
+    <p class='description_content'>
+      <a href="<%= doc.premalink %>" target="_blank"><%= doc.title %></a>
+    </p>
   </div>
 </div>
+<% end %>

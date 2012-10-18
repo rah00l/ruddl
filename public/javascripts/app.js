@@ -49,19 +49,24 @@
 
 $(function() {
     var $container = $('#container');
-
-    $container.imagesLoaded( function(){
+    $container.imagesLoaded( function() {
         $container.masonry({
             itemSelector : '.box'
         });
     });
 
-    // set up hover panels
-    // although this can be done without JavaScript, we've attached these events
-    // because it causes the hover to be triggered when the element is tapped on a touch device
-    $('.hover').hover(function(){
-        $(this).addClass('flip');
-    },function(){
-        $(this).removeClass('flip');
+    function getUpdate(section) {
+        $container.load("/" + section, function() {
+           $container.imagesLoaded( function() {
+                $container.masonry('reload');
+            });
+        });
+    }
+
+    $('.sub-nav dd').click(function() {
+        $('.sub-nav dd').attr('class','');
+        $(this).attr('class','active');
+        getUpdate($(this).find('a').attr('href').replace('#/',''));
+        return false;
     });
 });

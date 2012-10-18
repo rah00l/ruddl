@@ -13,11 +13,6 @@
 
   <title>ruddl</title>
 
-  <!-- Included CSS Files (Uncompressed) -->
-  <!--
-  <link rel="stylesheet" href="stylesheets/foundation.css">
-  -->
-
   <!-- Included CSS Files (Compressed) -->
   <link rel="stylesheet" href="stylesheets/foundation.min.css">
   <link rel="stylesheet" href="stylesheets/app.css">
@@ -41,10 +36,24 @@
         </a>
       </h1>
     </li>
+    <li style="color: #ffffff;">
+      reddit redefined!
+    </li>
   </ul>
 </nav>
 
-<%= yield %>
+<div class="twelve columns clearfix">
+  <dl class="sub-nav">
+    <dt>Filter:</dt>
+    <dd class="active"><a href="#/hot">hot</a></dd>
+    <dd><a href="#/new">new</a></dd>
+    <dd><a href="#/controversial">controversial</a></dd>
+    <dd><a href="#/top">top</a></dd>
+  </dl>
+  <div id="container">
+    <%= yield %>
+  </div>
+</div>
 
 <!-- Included JS Files (Compressed) -->
 <script src="javascripts/jquery.js"></script>
