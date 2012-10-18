@@ -34,16 +34,16 @@ class MyApp < Sinatra::Base
                 image = album_json['album']['images'][0]['image']['hash']
               end
               ext = (File.extname(image).length == 0) ? '.jpg' : ''
-              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], URI.join(host, image+ext), item['data']['url']))
+              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], URI.join(host, image+ext), item['data']['url'],URI.join('http://reddit.com/', item['data']['permalink'])))
             elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
               host = "http://i.qkme.me"
               image = URI(item['data']['url'])
               ext = '.jpg'
-              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], URI.join(host, image.path.gsub("/meme/", "").gsub("/", "")+ext), item['data']['url']))
+              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], URI.join(host, image.path.gsub("/meme/", "").gsub("/", "")+ext), item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
             elsif (item['data']['domain'].include? 'youtube')
-              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], item['data']['url']))
+              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
             elsif (item['data']['url'] =~ /#{media_ext.map { |m| Regexp.escape m }.join('|')}/)
-              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['url'], item['data']['url']))
+              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
             end
           end
         end

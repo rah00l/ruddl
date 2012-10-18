@@ -1,3 +1,15 @@
+@font-face {
+    font-family: 'WebSymbolsRegular';
+    src: url('WebSymbols-Regular-webfont.eot');
+    src: url('WebSymbols-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+    url('WebSymbols-Regular-webfont.woff') format('woff'),
+    url('WebSymbols-Regular-webfont.ttf') format('truetype'),
+    url('WebSymbols-Regular-webfont.svg#WebSymbolsRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
 #container {
     background: #FFF;
     padding: 5px;
@@ -31,6 +43,7 @@ div.description{
     color:white;
     word-wrap: break-word;
     width: 350px;
+    overflow: auto;
 }
 
 @media only screen and (min-width : 1200px) {
@@ -46,6 +59,15 @@ div.description{
         padding:10px;
         margin:0px;
         font-weight: bold;
+        width: 320px;
+        float: left;
+    }
+
+    .description_icons {
+        font: 15px 'WebSymbolsRegular', Arial, sans-serif;
+        letter-spacing: 0;
+        float: left;
+        color: #666;
     }
 }
 @media only screen and (min-width : 768px) and (max-width : 1024px) {
@@ -60,6 +82,13 @@ div.description{
         margin:0px;
         font-weight: bold;
     }
+
+    .description_icons {
+        font: 15px 'WebSymbolsRegular', Arial, sans-serif;
+        letter-spacing: 0;
+        float: left;
+        color: #666;
+    }
 }
 @media only screen and (max-width : 480px) {
     /* most smartphones, including iPhones */
@@ -72,5 +101,12 @@ div.description{
         padding:10px;
         margin:0px;
         font-weight: normal;
+    }
+
+    .description_icons {
+        font: 15px 'WebSymbolsRegular', Arial, sans-serif;
+        letter-spacing: 0;
+        float: left;
+        color: #666;
     }
 }
