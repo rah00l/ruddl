@@ -26,7 +26,9 @@ class MyApp < Sinatra::Base
       @feed['data']['children'].each_with_index do |item, counter|
         begin
           if (item['data']['over_18'] == false)
-            if (item['data']['domain'].include? 'imgur')
+            if (item['data']['url'] =~ /#{media_ext.map { |m| Regexp.escape m }.join('|')}/)
+              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
+            elsif (item['data']['domain'].include? 'imgur')
               host = "http://i.imgur.com"
               image = URI(item['data']['url']).path
               if (item['data']['url'].include? 'imgur.com/a/')
@@ -40,10 +42,12 @@ class MyApp < Sinatra::Base
               image = URI(item['data']['url'])
               ext = '.jpg'
               @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], URI.join(host, image.path.gsub("/meme/", "").gsub("/", "")+ext), item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
-            elsif (item['data']['domain'].include? 'youtube')
+            elsif (item['data']['domain'].include? 'youtube' or item['data']['domain'].include? 'youtu.be')
               @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
-            elsif (item['data']['url'] =~ /#{media_ext.map { |m| Regexp.escape m }.join('|')}/)
-              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
+            elsif (item['data']['domain'].include? 'wikipedia')
+              title = URI(item['data']['url']).path.gsub('/wiki/','')
+              wiki_json = JSON.parse(open("http://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&format=json&iiprop=url&iilimit=1&generator=images&titles=#{title}&gimlimit=1").read)
+              @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
             end
           end
         end
