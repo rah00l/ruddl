@@ -49,6 +49,7 @@
 
 $(function() {
     var $container = $('#container');
+
     $container.imagesLoaded( function() {
         $container.masonry({
             itemSelector : '.box'
@@ -63,10 +64,18 @@ $(function() {
         });
     }
 
+    function autoUpdate() {
+        getUpdate($('.sub-nav dd.active').find('a').attr('href').replace('#/',''));
+    }
+
     $('.sub-nav dd').click(function() {
         $('.sub-nav dd').attr('class','');
         $(this).attr('class','active');
         getUpdate($(this).find('a').attr('href').replace('#/',''));
         return false;
     });
+
+    window.setInterval(function() {
+        autoUpdate();
+    }, 60000);
 });
