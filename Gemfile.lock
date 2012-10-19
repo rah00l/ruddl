@@ -3,9 +3,8 @@ GEM
   specs:
     backports (2.6.4)
     eventmachine (1.0.0-x86-mingw32)
+    fastimage (1.2.13)
     guess_html_encoding (0.0.6)
-    html_truncator (0.3.0)
-      nokogiri (~> 1.4)
     mini_magick (3.4)
       subexec (~> 0.2.1)
     nokogiri (1.5.5-x86-mingw32)
@@ -36,7 +35,7 @@ PLATFORMS
   x86-mingw32
 
 DEPENDENCIES
-  html_truncator
+  fastimage
   mini_magick
   redis
   ruby-readability

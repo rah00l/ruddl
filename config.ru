@@ -5,6 +5,7 @@ require 'readability'
 require 'redis'
 require 'digest'
 require 'json'
+require 'fastimage'
 
 Bundler.require
 

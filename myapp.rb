@@ -51,6 +51,26 @@ class MyApp < Sinatra::Base
                 title = URI(item['data']['url']).path.gsub('/wiki/','')
                 wiki_json = JSON.parse(open("http://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&format=json&iiprop=url&iilimit=1&generator=images&titles=#{title}&gimlimit=1").read)
                 @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
+              else
+                if not (item['data']['domain'].include? 'reddit')
+                  uri = URI(item['data']['url'])
+                  source = open(uri).read
+                  doc = Readability::Document.new(source, :min_image_height => 0, :min_image_width => 0, :tags => %w[img], :attributes => %w[src], :remove_empty_nodes => false)
+                  best_image = nil
+                  doc.images.each do |image|
+                    if not (image =~ /^http:/)
+                      image = uri.scheme+'://'+uri.host+image
+                    end
+                    dimensions = FastImage.size(image)
+                    if(dimensions[0] >= 500 and dimensions[0]/dimensions[1] <= 2)
+                      best_image = image
+                      break
+                    end
+                  end
+                  if not best_image.nil?
+                    @ruddl.push(RuddlDoc.new(item['data']['id'], item['data']['title'], best_image, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink'])))
+                  end
+                end
               end
             end
           rescue => exception
