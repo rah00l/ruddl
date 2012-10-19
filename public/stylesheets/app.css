@@ -17,6 +17,12 @@
     clear: both;
 }
 
+.tag {
+    color: #ffffff;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 .centered { margin: 0 auto; }
 
 .box {
