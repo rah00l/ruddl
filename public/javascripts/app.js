@@ -48,47 +48,57 @@
 })(jQuery, this);
 
 $(function() {
-    var $container = $('#container');
+    var ruddl = (function () {
+        var container = $('#container');
 
-    calcCols();
-
-    $container.imagesLoaded( function() {
-        $container.masonry({
-            itemSelector : '.box'
-        });
-    });
-
-    function getUpdate(section) {
-        $container.load("/" + section, function() {
-           $container.imagesLoaded( function() {
-                $container.masonry('reload');
+        var ruddl = function () {
+            this.calcCols(false);
+            container.imagesLoaded( function() {
+                container.masonry({
+                    itemSelector : '.box'
+                });
             });
-        });
-    }
+        };
 
-    function autoUpdate() {
-        getUpdate($('.sub-nav dd.active').find('a').attr('href').replace('#/',''));
-    }
+        ruddl.prototype = {
+            constructor: ruddl,
+            getUpdate : function (section) {
+                var parent = this;
+                container.load("/" + section, function() {
+                    container.imagesLoaded( function() {
+                        parent.calcCols(true);
+                    });
+                });
+            },
+            autoUpdate : function () {
+                this.getUpdate($('.sub-nav dd.active').find('a').attr('href').replace('#/',''));
+            },
+            calcCols : function (reloadMasonry) {
+                var width = Math.floor(($(window).width()-70)/3);
+                $('.box').css('width',width+'px');
+                if(reloadMasonry)
+                    container.masonry('reload');
+            }
+        };
 
-    function calcCols() {
-        var width = Math.floor(($(window).width()-70)/3);
-        console.log(width);
-        $('.box').css('width',width+'px');
-        $container.masonry('reload');
-    }
+        return ruddl;
+    })();
+
+    var feed = new ruddl();
 
     $('.sub-nav dd').click(function() {
         $('.sub-nav dd').attr('class','');
         $(this).attr('class','active');
-        getUpdate($(this).find('a').attr('href').replace('#/',''));
+        feed.getUpdate($(this).find('a').attr('href').replace('#/',''));
         return false;
     });
 
     window.setInterval(function() {
-        autoUpdate();
+        feed.autoUpdate();
     }, 60000);
 
     $(window).resize(function() {
-        calcCols();
+        feed.calcCols(true);
     });
+
 });
