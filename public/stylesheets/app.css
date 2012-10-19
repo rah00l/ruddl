@@ -1,13 +1,7 @@
-@font-face {
-    font-family: 'WebSymbolsRegular';
-    src: url('WebSymbols-Regular-webfont.eot');
-    src: url('WebSymbols-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-    url('WebSymbols-Regular-webfont.woff') format('woff'),
-    url('WebSymbols-Regular-webfont.ttf') format('truetype'),
-    url('WebSymbols-Regular-webfont.svg#WebSymbolsRegular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-
+.tag {
+    color: #ffffff;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 #container {
@@ -17,43 +11,23 @@
     clear: both;
 }
 
-.tag {
-    color: #ffffff;
-    padding-left: 10px;
-    padding-right: 10px;
-}
-
-.centered { margin: 0 auto; }
-
 .box {
     margin: 5px;
     padding: 5px;
     font-size: 11px;
     line-height: 1.4em;
     float: left;
-}
-
-.box h2 {
-    font-size: 14px;
-    font-weight: 200;
-}
-
-.rtl .box {
-    float: right;
-    text-align: right;
-    direction: rtl;
+    width: 350px;
 }
 
 .box img {
     display: block;
-    width: 350px;
 }
 
 div.description{
     background-color:black;
     color:white;
     word-wrap: break-word;
-    width: 350px;
     overflow: auto;
 }
 
@@ -64,69 +38,12 @@ p.description_content{
     float: left;
 }
 
-/*.description_icons {
-    font: 15px 'WebSymbolsRegular', Arial, sans-serif;
-    letter-spacing: 0;
-    float: left;
-    color: #666;
-}*/
-
-@media only screen and (min-width : 768px) and (max-width : 1024px) {
-    /* iPads, most other tablets */
-    .box img {
-        display: block;
-        width: 250px;
-    }
-
-    div.description{
-        background-color:black;
-        color:white;
-        word-wrap: break-word;
-        width: 250px;
-        overflow: auto;
-    }
-
-    p.description_content{
-        padding:10px;
-        margin:0px;
-        font-weight: bold;
-    }
-
-    body::before{
-        content: "Tablet media query (768 < 979) fired";
-        font-weight: bold;
-        display: block;
-        text-align: center;
-        background: rgba(255,255,0, 0.9);
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 99;
-    }
-}
 @media only screen and (max-width : 480px) {
-    /* most smartphones, including iPhones */
-    .box img {
-        display: block;
-        width: 150px;
-    }
-
-    div.description{
-        background-color:black;
-        color:white;
-        word-wrap: break-word;
-        width: 150px;
-        overflow: auto;
-    }
-
     p.description_content{
-        padding:10px;
-        margin:0px;
-        font-weight: normal;
+        font-size: 10px;
     }
 
-    body::before{
+    /*body::before{
         content: "Mobile media query (0 < 767) fired";
         font-weight: bold;
         display: block;
@@ -137,5 +54,5 @@ p.description_content{
         left: 0;
         right: 0;
         z-index: 99;
-    }
+    }*/
 }

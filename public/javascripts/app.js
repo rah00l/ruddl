@@ -50,6 +50,8 @@
 $(function() {
     var $container = $('#container');
 
+    calcCols();
+
     $container.imagesLoaded( function() {
         $container.masonry({
             itemSelector : '.box'
@@ -68,6 +70,13 @@ $(function() {
         getUpdate($('.sub-nav dd.active').find('a').attr('href').replace('#/',''));
     }
 
+    function calcCols() {
+        var width = Math.floor(($(window).width()-70)/3);
+        console.log(width);
+        $('.box').css('width',width+'px');
+        $container.masonry('reload');
+    }
+
     $('.sub-nav dd').click(function() {
         $('.sub-nav dd').attr('class','');
         $(this).attr('class','active');
@@ -78,4 +87,8 @@ $(function() {
     window.setInterval(function() {
         autoUpdate();
     }, 60000);
+
+    $(window).resize(function() {
+        calcCols();
+    });
 });
