@@ -74,6 +74,11 @@ class MyApp < Sinatra::Base
     rescue => exception
       puts exception
     end
+
+    if best_image.nil?
+      best_image = "http://pagepeeker.com/thumbs.php?size=x&url=#{URI::encode(item['data']['url'])}"
+    end
+
     if not best_image.nil?
       rdoc = RuddlDoc.new(item['data']['id'], item['data']['title'], best_image, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
       rdoc
