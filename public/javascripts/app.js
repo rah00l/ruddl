@@ -60,13 +60,23 @@ $(function() {
             });
         };
 
+        var setCols = function(width) {
+            if (!document.styleSheets) return;
+            var theRules = new Array();
+            if (document.styleSheets[2].cssRules)
+                theRules = document.styleSheets[2].cssRules
+            else if (document.styleSheets[2].rules)
+                theRules = document.styleSheets[2].rules
+            else return;
+            theRules[0].style.width = width+'px';
+        };
+
         ruddl.prototype = {
             constructor: ruddl,
             getUpdate : function (section) {
-                var parent = this;
                 container.load("/" + section, function() {
                     container.imagesLoaded( function() {
-                        parent.calcCols(true);
+                        container.masonry('reload');
                     });
                 });
             },
@@ -75,7 +85,8 @@ $(function() {
             },
             calcCols : function (reloadMasonry) {
                 var width = Math.floor(($(window).width()-70)/3);
-                $('.box').css('width',width+'px');
+                //$('.box').css('width',width+'px');
+                setCols(width);
                 if(reloadMasonry)
                     container.masonry('reload');
             }
