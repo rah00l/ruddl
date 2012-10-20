@@ -18,6 +18,7 @@
 $(function() {
     var ruddl = (function () {
         var container = $('#container');
+        var updateInterval = 30000;
 
         var ruddl = function () {
             this.calcCols(false);
@@ -26,6 +27,7 @@ $(function() {
                     itemSelector : '.box'
                 });
             });
+            this.startTimer();
         };
 
         var setCols = function(width) {
@@ -48,15 +50,29 @@ $(function() {
                     });
                 });
             },
-            autoUpdate : function () {
+            refreshFeed : function () {
                 this.getUpdate($('.sub-nav dd.active').find('a').attr('href').replace('#/',''));
             },
             calcCols : function (reloadMasonry) {
                 var width = Math.floor(($(window).width()-70)/3);
-                //$('.box').css('width',width+'px');
                 setCols(width);
                 if(reloadMasonry)
                     container.masonry('reload');
+            },
+            startTimer : function() {
+                parent = this;
+                var counter = updateInterval / 1000;
+
+                var timer = window.setInterval(function() {
+                    if(counter == 0) {
+                        counter = updateInterval / 1000;
+                    }
+                    $('.timer').html('Next update in: '+ counter-- +'s');
+                }, 1000);
+
+                var interval = window.setInterval(function() {
+                    parent.refreshFeed();
+                }, updateInterval);
             }
         };
 
@@ -72,12 +88,7 @@ $(function() {
         return false;
     });
 
-    window.setInterval(function() {
-        feed.autoUpdate();
-    }, 60000);
-
     $(window).resize(function() {
         feed.calcCols(true);
     });
-
 });

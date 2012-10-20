@@ -4,6 +4,13 @@
     padding-right: 10px;
 }
 
+.timer {
+    color: #CCCCCC;
+    padding-left: 10px;
+    padding-right: 10px;
+    float: right !important;
+}
+
 #container {
     background: #FFF;
     padding: 5px;
