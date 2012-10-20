@@ -129,7 +129,7 @@ class MyApp < Sinatra::Base
         @@redis.set(doc_key, Marshal.dump(rdoc))
       end
       @@redis.set(key, Marshal.dump(ruddl))
-      @@redis.expire(key, 60)
+      @@redis.expire(key, 30)
     end
     ruddl
   end
