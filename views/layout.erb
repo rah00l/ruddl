@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="stylesheets/foundation.min.css">
   <link rel="stylesheet" href="stylesheets/app.css">
 
-  <script src="javascripts/modernizr.foundation.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
 
   <!-- IE Fix for HTML5 Tags -->
   <!--[if lt IE 9]>
@@ -58,13 +58,15 @@
 </nav>
 
 <div class="twelve columns clearfix">
-  <dl class="sub-nav">
-    <dt>Filter:</dt>
-    <dd class="active"><a href="#/hot">hot</a></dd>
-    <dd><a href="#/new">new</a></dd>
-    <dd><a href="#/controversial">controversial</a></dd>
-    <dd><a href="#/top">top</a></dd>
-  </dl>
+  <div id="subnav">
+      <dl class="sub-nav">
+        <dt>Filter:</dt>
+        <dd class="active"><a href="#/hot">hot</a></dd>
+        <dd><a href="#/new">new</a></dd>
+        <dd><a href="#/controversial">controversial</a></dd>
+        <dd><a href="#/top">top</a></dd>
+      </dl>
+  </div>
   <div id="container">
     <%= yield %>
   </div>
@@ -72,7 +74,6 @@
 
 <!-- Included JS Files (Compressed) -->
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-<script src="javascripts/foundation.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/masonry/2.1.04/jquery.masonry.min.js"></script>
 <!-- Initialize JS Plugins -->
 <script src="javascripts/app.js"></script>
