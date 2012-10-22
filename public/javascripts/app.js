@@ -28,7 +28,7 @@ $(function() {
                     isAnimated: !Modernizr.csstransitions
                 });
             });
-            this.startTimer();
+            //this.startTimer();
         };
 
         var setCols = function(width) {
