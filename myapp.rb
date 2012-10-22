@@ -91,6 +91,30 @@ class MyApp < Sinatra::Base
     end
   end
 
+  def parse_feed_item(item)
+    rdoc = nil
+    if (item['data']['over_18'] == false)
+      if (item['data']['url'] =~ /#{media_ext.map { |m| Regexp.escape m }.join('|')}/)
+        rdoc = RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+      elsif (item['data']['domain'].include? 'imgur')
+        rdoc = parse_imgur(item)
+      elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
+        rdoc = parse_quickmeme(item)
+      elsif (item['data']['domain'].include? 'youtube' or item['data']['domain'].include? 'youtu.be')
+        rdoc = parse_youtube(item)
+      elsif (item['data']['domain'].include? 'wikipedia')
+        rdoc = parse_wikipedia(item)
+      else
+        if not (item['data']['url'].include? 'reddit.com')
+          rdoc = parse_misc(item)
+        else
+          puts "no conditions met => #{item['data']['url']}"
+        end
+      end
+    end
+    return rdoc
+  end
+
   def parse_feed(section)
     puts "#{section} requested"
     key = "ruddl_#{section}"
@@ -107,25 +131,7 @@ class MyApp < Sinatra::Base
           puts "#{doc_key} found in cache"
           rdoc = Marshal.load(@@redis.get(doc_key))
         else
-          if (item['data']['over_18'] == false)
-            if (item['data']['url'] =~ /#{media_ext.map { |m| Regexp.escape m }.join('|')}/)
-              rdoc = RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
-            elsif (item['data']['domain'].include? 'imgur')
-              rdoc = parse_imgur(item)
-            elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
-              rdoc = parse_quickmeme(item)
-            elsif (item['data']['domain'].include? 'youtube' or item['data']['domain'].include? 'youtu.be')
-              rdoc = parse_youtube(item)
-            elsif (item['data']['domain'].include? 'wikipedia')
-              rdoc = parse_wikipedia(item)
-            else
-              if not (item['data']['url'].include? 'reddit.com')
-                rdoc = parse_misc(item)
-              else
-                puts "no conditions met => #{item['data']['url']}"
-              end
-            end
-          end
+          rdoc = parse_feed_item(item)
         end
         if not rdoc.nil?
           ruddl.push(rdoc)
