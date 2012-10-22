@@ -94,7 +94,7 @@ class MyApp < Sinatra::Base
   def parse_feed_item(item)
     rdoc = nil
     if (item['data']['over_18'] == false)
-      if (item['data']['url'] =~ /#{media_ext.map { |m| Regexp.escape m }.join('|')}/)
+      if (item['data']['url'] =~ /#{['jpg', 'jpeg', 'gif', 'png'].map { |m| Regexp.escape m }.join('|')}/)
         rdoc = RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
       elsif (item['data']['domain'].include? 'imgur')
         rdoc = parse_imgur(item)
@@ -122,7 +122,7 @@ class MyApp < Sinatra::Base
     if (@@redis.exists(key))
       ruddl = Marshal.load(@@redis.get(key))
     else
-      media_ext = ['jpg', 'jpeg', 'gif', 'png']
+
       @feed = JSON.parse(open("http://www.reddit.com/#{section}.json", "User-Agent" => "ruddl by /u/jesalg").read)
       @feed['data']['children'].each_with_index do |item, index|
         doc_key = item['data']['id']
