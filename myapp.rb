@@ -16,7 +16,11 @@ class MyApp < Sinatra::Base
   end
 
   def parse_youtube(item)
-    rdoc = RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+    begin
+      rdoc = RuddlDoc.new(item['data']['id'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+    rescue => exception
+      puts exception
+    end
     rdoc
   end
 
