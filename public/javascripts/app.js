@@ -24,7 +24,8 @@ $(function() {
             this.calcCols(false);
             container.imagesLoaded( function() {
                 container.masonry({
-                    itemSelector : '.box'
+                    itemSelector : '.box',
+                    isAnimated: !Modernizr.csstransitions
                 });
             });
             this.startTimer();
