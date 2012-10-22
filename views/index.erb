@@ -1,5 +1,5 @@
 <% @ruddl.each do |doc| %>
-<div class="box panel">
+<div class="box panel" id="<%= doc.key %>">
   <a href="<%= doc.link %>" target="_blank"><img src="<%= doc.image %>"/></a>
     <div class='description'>
     <p class='description_content'>
