@@ -52,6 +52,7 @@ $(function() {
             },
             refreshFeed : function () {
                 this.getUpdate($('.sub-nav dd.active').find('a').attr('href').replace('#/',''));
+                this.calcCols(true);
             },
             calcCols : function (reloadMasonry) {
                 var width = Math.floor(($(window).width()-70)/3);
@@ -64,13 +65,11 @@ $(function() {
                 var counter = updateInterval / 1000;
 
                 var timer = window.setInterval(function() {
-                    if(counter == 0) {
-                        counter = updateInterval / 1000;
-                    }
                     $('.timer').html('Next update in: '+ counter-- +'s');
                 }, 1000);
 
                 var interval = window.setInterval(function() {
+                    counter = updateInterval / 1000;
                     parent.refreshFeed();
                 }, updateInterval);
             }
