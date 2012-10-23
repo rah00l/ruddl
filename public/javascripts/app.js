@@ -46,6 +46,7 @@ $(function() {
                         newElems.animate({opacity: 1});
                         container.masonry('appended', newElems, true);
                     });
+                    updateNextURL(newElems);
                 }
             );
         };
@@ -60,6 +61,16 @@ $(function() {
             else return;
             theRules[0].style.width = width+'px';
         };
+
+        var updateNextURL = function(newElems) {
+            var lastElem = newElems[newElems.length-1]
+            console.log('last elem id is: '+lastElem.id);
+            var uri = new URI($('#page-nav a').attr('href'));
+            uri.segment(uri.segment.length-1, parseInt(uri.segment(uri.segment.length-1)) + 1);
+            uri.segment(uri.segment.length-2, lastElem.id);
+            $('#page-nav a').attr('href', uri.toString())
+            console.log('new url is: '+$('#page-nav a').attr('href'));
+        }
 
         ruddl.prototype = {
             constructor: ruddl,
