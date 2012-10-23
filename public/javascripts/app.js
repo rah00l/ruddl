@@ -22,13 +22,32 @@ $(function() {
 
         var ruddl = function () {
             this.calcCols(false);
-            container.imagesLoaded( function() {
+            container.imagesLoaded(function() {
                 container.masonry({
                     itemSelector : '.box',
                     isAnimated: !Modernizr.csstransitions
                 });
             });
             //this.startTimer();
+            container.infinitescroll({
+                    navSelector  : '#page-nav',    // selector for the paged navigation
+                    nextSelector : '#page-nav a',  // selector for the NEXT link (to page 2)
+                    itemSelector : '.box',     // selector for all items you'll retrieve
+                    loading: {
+                        finishedMsg: 'No more pages to load.',
+                        img: 'http://i.imgur.com/6RMhx.gif'
+                    },
+                    debug : true
+                },
+                // trigger Masonry as a callback
+                function(newElements) {
+                    var newElems = $(newElements).css({opacity: 0});
+                    newElems.imagesLoaded(function() {
+                        newElems.animate({opacity: 1});
+                        container.masonry('appended', newElems, true);
+                    });
+                }
+            );
         };
 
         var setCols = function(width) {

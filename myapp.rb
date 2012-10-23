@@ -1,9 +1,11 @@
 require "sinatra/base"
 require "sinatra/reloader"
+require "sinatra/multi_route"
 
 class MyApp < Sinatra::Base
 
   @@redis = Redis.new
+  register Sinatra::MultiRoute
 
   configure :development, :test do
     enable :logging, :dump_errors, :raise_errors
@@ -115,15 +117,16 @@ class MyApp < Sinatra::Base
     return rdoc
   end
 
-  def parse_feed(section)
-    puts "#{section} requested"
-    key = "ruddl_#{section}"
+  def parse_feed(section, after)
+    key = after.nil? ? "ruddl_#{section}" : "ruddl_#{section}_#{after}"
+    puts "#{key} requested"
     ruddl = Array.new
     if (@@redis.exists(key))
       ruddl = Marshal.load(@@redis.get(key))
     else
-
-      @feed = JSON.parse(open("http://www.reddit.com/#{section}.json", "User-Agent" => "ruddl by /u/jesalg").read)
+      url = after.nil? ? "http://www.reddit.com/#{section}.json" : "http://www.reddit.com/#{section}.json?after=#{after}"
+      puts "requesting => #{url}"
+      @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
       @feed['data']['children'].each_with_index do |item, index|
         doc_key = item['data']['name']
         puts "#{index} => #{doc_key}"
@@ -138,17 +141,23 @@ class MyApp < Sinatra::Base
         end
         @@redis.set(doc_key, Marshal.dump(rdoc))
       end
+      key = after.nil? ? "ruddl_#{section}" : "ruddl_#{section}_#{ @feed['data']['after']}"
       @@redis.set(key, Marshal.dump(ruddl))
       @@redis.expire(key, 30)
     end
     ruddl
   end
 
-  get "/*" do
-    section = params[:splat].first
-    section.empty? ? section = 'hot' : section
-    if(['hot','new','controversial','top'].include?(section))
-      @ruddl = parse_feed(section)
+  get '/*/:after/:page', '/*' do
+    @section = params[:splat].first
+    @section.empty? ? @section = 'hot' : @section
+    @after = params[:after]
+    page = params[:page]
+    page.nil? ? page = 1 : page
+    @nextPage = page.to_i + 1
+    puts "#{@after} ***************** #{@nextPage.to_s}"
+    if(['hot','new','controversial','top'].include?(@section))
+      @ruddl = parse_feed(@section, @after)
       erb :index, :layout => (request.xhr? ? false : :layout)
     end
   end
