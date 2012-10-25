@@ -147,6 +147,29 @@ class MyApp < Sinatra::Base
     ruddl
   end
 
+  get '/test' do
+      best_image = nil
+      sized_images = Hash.new
+      uri = URI("http://news.nationalpost.com/2012/10/23/greedy-u-s-billionaire-urges-michigan-voters-to-reject-free-bridge-to-canada/")
+      images = Nokogiri::HTML(open(uri)).search('//img/@src').to_a
+      images.each do |image|
+        if not (['gravatar', 'doubleclick'].any? { |s| image.include?(s) })
+          dimensions = FastImage.size(image)
+          sized_images[image] = dimensions
+          if not dimensions.nil?
+            if(dimensions[0] >= 450 and dimensions[0]/dimensions[1] <= 2)
+              best_image = image
+              break
+            end
+          end
+        end
+      end
+      if(best_image.nil?)
+        best_image = 'need plan b'
+      end
+      best_image
+  end
+
   get '/*/:after/:page', '/*' do
     @section = params[:splat].first
     @section.empty? ? @section = 'hot' : @section
