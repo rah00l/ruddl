@@ -44,10 +44,10 @@ $(function() {
 
         var updateNextURL = function(newElems) {
             var lastElem = newElems[newElems.length-1]
-            var uri = new URI($('#page-nav a').attr('href'));
+            var uri = new URI($('#load-more').attr('href').replace('#',''));
             uri.segment(uri.segment.length-1, parseInt(uri.segment(uri.segment.length-1)) + 1);
             uri.segment(uri.segment.length-2, lastElem.id);
-            $('#load-more').attr('href', uri.toString())
+            $('#load-more').attr('href', '#'+uri.toString())
         };
 
         ruddl.prototype = {
