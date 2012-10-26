@@ -64,17 +64,23 @@ class MyApp < Sinatra::Base
     puts "parsing misc => #{item['data']['url']}"
     begin
       uri = URI(item['data']['url'])
-      source = open(uri).read
-      doc = Readability::Document.new(source, :min_image_height => 0, :min_image_width => 0, :tags => %w[img], :attributes => %w[src], :remove_empty_nodes => false)
+      images = Nokogiri::HTML(open(uri)).css('//img/@src').to_a
       best_image = nil
-      doc.images.each do |image|
-        if not (image =~ /^http:/)
-          image = uri.scheme+'://'+uri.host+image
-        end
-        dimensions = FastImage.size(image)
-        if(dimensions[0] >= 500 and dimensions[0]/dimensions[1] <= 2)
-          best_image = image
-          break
+      #sized_images = Hash.new
+      images.each do |image|
+        image = image.to_s
+        if not (['analytics','loader.gif','spacer.gif','blank.gif','gravatar','doubleclick'].any? { |s| image.include?(s) })
+          if not (image =~ /^http:/)
+            image = uri.scheme+'://'+uri.host+image
+          end
+          dimensions = FastImage.size(URI.encode(image))
+          #sized_images[image] = dimensions
+          if not dimensions.nil?
+            if(dimensions[0] >= 450 and dimensions[0]/dimensions[1] <= 2)
+              best_image = image.to_s
+              break
+            end
+          end
         end
       end
     rescue => exception
@@ -147,28 +153,37 @@ class MyApp < Sinatra::Base
     ruddl
   end
 
-  get '/test' do
+  get '/scrape' do
       best_image = nil
       sized_images = Hash.new
-      uri = URI("http://news.nationalpost.com/2012/10/23/greedy-u-s-billionaire-urges-michigan-voters-to-reject-free-bridge-to-canada/")
+      uri = URI("http://www.huffingtonpost.com/2012/10/25/president-obama-ayn-rand-misunderstood-teenagers_n_2019618.html")
       images = Nokogiri::HTML(open(uri)).css('//img/@src').to_a
       images.each do |image|
-        dimensions = FastImage.size(image)
-        sized_images[image] = dimensions
-        if not dimensions.nil?
-          if(dimensions[0] >= 450 and dimensions[0]/dimensions[1] <= 2)
-            best_image = image
-            break
+        image = image.to_s
+        puts image
+        if not (['analytics','loader.gif','spacer.gif','blank.gif','gravatar','doubleclick'].any? { |s| image.include?(s) })
+          puts 'got in!'
+          if not (image =~ /^http:/)
+            image = uri.scheme+'://'+uri.host+image
+          end
+          dimensions = FastImage.size(URI.encode(image))
+          sized_images[image] = dimensions
+          if not dimensions.nil?
+            if(dimensions[0] >= 450 and dimensions[0]/dimensions[1] <= 2)
+              best_image = image
+              break
+            end
           end
         end
+        if(best_image.nil?)
+          best_image = 'need plan b'
+        end
+        best_image
       end
-      if(best_image.nil?)
-        best_image = 'need plan b'
-      end
-      best_image.to_s
+      best_image
   end
 
-  get '/*/:after/:page', '/*' do
+  get '/*/:after', '/*' do
     @section = params[:splat].first
     @section.empty? ? @section = 'hot' : @section
     @after = params[:after]
