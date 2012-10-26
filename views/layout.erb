@@ -61,7 +61,8 @@
 </nav>
 
 <div class="twelve columns clearfix">
-  <div id="subnav">
+  <div id="subnav" class="row display">
+    <div class="twelve columns">
       <dl class="sub-nav">
         <dt>Filter:</dt>
         <dd class="active"><a href="#/hot">hot</a></dd>
@@ -69,19 +70,27 @@
         <dd><a href="#/controversial">controversial</a></dd>
         <dd><a href="#/top">top</a></dd>
       </dl>
+    </div>
   </div>
   <div id="container">
     <%= yield %>
   </div>
-  <nav id="page-nav">
-    <a href="<%= "http://#{request.host}:#{request.port}/#{@section}/#{@ruddl.last.key}/2" %>"></a>
-  </nav>
+  <div class="row display" style="text-align: center; display: block;width: 100%;clear: both;">
+    <div class="twelve columns centered">
+      <a id="load-more" href="<%= "#/#{@section}/#{@ruddl.last.key}/2" %>" class="large secondary button">Load More</a>
+    </div>
+  </div>
+</div>
+
+<div style="height:45px;background-color:#000;width: 100%;clear: both; margin-top: 30px;">
+  <div class="twelve columns">
+    <p>© 2012 ruddl</p>
+  </div>
 </div>
 
 <!-- Included JS Files (Compressed) -->
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/masonry/2.1.04/jquery.masonry.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-infinitescroll/2.0b2.110713/jquery.infinitescroll.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/URI.js/1.7.2/URI.min.js"></script>
 <!-- Initialize JS Plugins -->
 <script src="javascripts/app.js"></script>

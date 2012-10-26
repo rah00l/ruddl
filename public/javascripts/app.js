@@ -29,26 +29,6 @@ $(function() {
                 });
             });
             //this.startTimer();
-            container.infinitescroll({
-                    navSelector  : '#page-nav',    // selector for the paged navigation
-                    nextSelector : '#page-nav a',  // selector for the NEXT link (to page 2)
-                    itemSelector : '.box',     // selector for all items you'll retrieve
-                    loading: {
-                        finishedMsg: 'No more pages to load.',
-                        img: 'http://i.imgur.com/6RMhx.gif'
-                    },
-                    debug : true
-                },
-                // trigger Masonry as a callback
-                function(newElements) {
-                    var newElems = $(newElements).css({opacity: 0});
-                    newElems.imagesLoaded(function() {
-                        newElems.animate({opacity: 1});
-                        container.masonry('appended', newElems, true);
-                    });
-                    updateNextURL(newElems);
-                }
-            );
         };
 
         var setCols = function(width) {
@@ -64,13 +44,11 @@ $(function() {
 
         var updateNextURL = function(newElems) {
             var lastElem = newElems[newElems.length-1]
-            console.log('last elem id is: '+lastElem.id);
             var uri = new URI($('#page-nav a').attr('href'));
             uri.segment(uri.segment.length-1, parseInt(uri.segment(uri.segment.length-1)) + 1);
             uri.segment(uri.segment.length-2, lastElem.id);
-            $('#page-nav a').attr('href', uri.toString())
-            console.log('new url is: '+$('#page-nav a').attr('href'));
-        }
+            $('#load-more').attr('href', uri.toString())
+        };
 
         ruddl.prototype = {
             constructor: ruddl,
@@ -79,6 +57,18 @@ $(function() {
                     container.imagesLoaded( function() {
                         container.masonry('reload');
                     });
+                });
+            },
+            loadMore : function(trigger) {
+                var url = trigger.attr('href').replace('#','');
+                trigger.html('Loading...');
+                $.get(url, function(newElements) {
+                    var newElems = $(newElements);
+                    newElems.imagesLoaded(function() {
+                        container.append(newElems).masonry('appended', newElems, true);
+                        trigger.html('Load More');
+                    });
+                    updateNextURL(newElems);
                 });
             },
             refreshFeed : function () {
@@ -115,6 +105,11 @@ $(function() {
         $('.sub-nav dd').attr('class','');
         $(this).attr('class','active');
         feed.getUpdate($(this).find('a').attr('href').replace('#/',''));
+        return false;
+    });
+
+    $('#load-more').click(function() {
+        feed.loadMore($(this));
         return false;
     });
 
