@@ -1,3 +1,6 @@
+require 'sinatra/base'
+require 'sinatra/synchrony'
+
 require 'rubygems'
 require 'bundler'
 require 'open-uri'

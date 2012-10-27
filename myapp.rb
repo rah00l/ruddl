@@ -5,6 +5,8 @@ require "sinatra/multi_route"
 class MyApp < Sinatra::Base
 
   @@redis = Redis.new
+
+  register Sinatra::Synchrony
   register Sinatra::MultiRoute
 
   configure :development, :test do
