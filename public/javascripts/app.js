@@ -43,7 +43,8 @@ $(function() {
         var updateNextURL = function(newElems) {
             var lastElem = newElems[newElems.length-1]
             var uri = new URI($('#load-more').attr('href').replace('#',''));
-            uri.segment(uri.segment.length-1, lastElem.id);
+            uri.segment(1, lastElem.id);
+            console.log('final url: '+uri.toString());
             $('#load-more').attr('href', '#'+uri.toString())
         };
 
@@ -59,11 +60,13 @@ $(function() {
             loadMore : function(trigger) {
                 var url = trigger.attr('href').replace('#','');
                 trigger.html('Loading...');
+                trigger.css('pointer-events', 'none');
                 $.get(url, function(newElements) {
                     var newElems = $(newElements);
                     newElems.imagesLoaded(function() {
                         container.append(newElems).masonry('appended', newElems, true);
                         trigger.html('Load More');
+                        trigger.css('pointer-events', 'auto');
                     });
                     updateNextURL(newElems);
                 });
