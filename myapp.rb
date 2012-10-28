@@ -21,7 +21,7 @@ class MyApp < Sinatra::Base
 
   def parse_youtube(item)
     begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
     rescue => exception
       puts exception
     end
@@ -37,7 +37,7 @@ class MyApp < Sinatra::Base
       image = album_json['album']['images'][0]['image']['hash']
     end
     ext = (File.extname(image).length == 0) ? '.jpg' : ''
-    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image+ext), item['data']['url'],URI.join('http://reddit.com/', item['data']['permalink']))
+    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image+ext), nil, item['data']['url'],URI.join('http://reddit.com/', item['data']['permalink']))
     rdoc
   end
 
@@ -46,7 +46,7 @@ class MyApp < Sinatra::Base
     host = "http://i.qkme.me"
     image = URI(item['data']['url'])
     ext = '.jpg'
-    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image.path.gsub("/meme/", "").gsub("/", "")+ext), item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image.path.gsub("/meme/", "").gsub("/", "")+ext), nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
     rdoc
   end
 
@@ -55,7 +55,7 @@ class MyApp < Sinatra::Base
     title = URI(item['data']['url']).path.gsub('/wiki/','')
     wiki_json = JSON.parse(open("http://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&format=json&iiprop=url&iilimit=1&generator=images&titles=#{title}&gimlimit=1").read)
     begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
       rdoc
     rescue => exception
       puts exception
@@ -94,10 +94,20 @@ class MyApp < Sinatra::Base
     end
 
     if not best_image.nil?
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
       rdoc
     else
       nil
+    end
+  end
+
+  def parse_reddit(item)
+    puts 'parsing reddit'
+    begin
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], nil, Nokogiri::HTML(item['data']['selftext_html']).text, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+      rdoc
+    rescue => exception
+      puts exception
     end
   end
 
@@ -105,7 +115,7 @@ class MyApp < Sinatra::Base
     rdoc = nil
     if (item['data']['over_18'] == false)
       if (item['data']['url'] =~ /#{['jpg', 'jpeg', 'gif', 'png'].map { |m| Regexp.escape m }.join('|')}/)
-        rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['url'], item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+        rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['url'], nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
       elsif (item['data']['domain'].include? 'imgur')
         rdoc = parse_imgur(item)
       elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
@@ -114,12 +124,10 @@ class MyApp < Sinatra::Base
         rdoc = parse_youtube(item)
       elsif (item['data']['domain'].include? 'wikipedia')
         rdoc = parse_wikipedia(item)
+      elsif (item['data']['url'].include? 'reddit.com')
+        rdoc = parse_reddit(item)
       else
-        if not (item['data']['url'].include? 'reddit.com')
-          rdoc = parse_misc(item)
-        else
-          puts "no conditions met => #{item['data']['url']}"
-        end
+        rdoc = parse_misc(item)
       end
     end
     return rdoc
@@ -148,6 +156,7 @@ class MyApp < Sinatra::Base
           ruddl.push(rdoc)
         end
         @@redis.set(doc_key, Marshal.dump(rdoc))
+        @@redis.expire(doc_key, 28800)
       end
       @@redis.set(key, Marshal.dump(ruddl))
       @@redis.expire(key, 30)
