@@ -62,10 +62,10 @@ $(function() {
                 trigger.html('Loading...');
                 trigger.css('pointer-events', 'none');
                 $.get(url, function(newElements) {
-                    var newElems = $(newElements).css('display','none');
+                    var newElems = $(newElements).hide();
                     newElems.imagesLoaded(function() {
                         container.append(newElems).masonry('appended', newElems, true);
-                        newElems.show('slow');
+                        newElems.show();
                         trigger.html('Load More');
                         trigger.css('pointer-events', 'auto');
                     });
