@@ -19,7 +19,8 @@ class MyApp < Sinatra::Base
     @@redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
   end
 
-  def parse_youtube(item)
+  def parse_video(item)
+    puts 'parsing video'
     begin
       rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
     rescue => exception
@@ -120,8 +121,8 @@ class MyApp < Sinatra::Base
         rdoc = parse_imgur(item)
       elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
         rdoc = parse_quickmeme(item)
-      elsif (item['data']['domain'].include? 'youtube' or item['data']['domain'].include? 'youtu.be')
-        rdoc = parse_youtube(item)
+      elsif (item['data']['domain'].include? 'youtube' or item['data']['domain'].include? 'youtu.be' or item['data']['domain'].include? 'vimeo')
+        rdoc = parse_video(item)
       elsif (item['data']['domain'].include? 'wikipedia')
         rdoc = parse_wikipedia(item)
       elsif (item['data']['url'].include? 'reddit.com')
