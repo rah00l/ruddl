@@ -63,10 +63,10 @@
 <div class="row" style="margin: 15px 0px 0px 15px;">
   <dl class="sub-nav">
     <dt>Filter:</dt>
-    <dd class="active"><a href="#/hot">hot</a></dd>
-    <dd><a href="#/new">new</a></dd>
-    <dd><a href="#/controversial">controversial</a></dd>
-    <dd><a href="#/top">top</a></dd>
+    <dd class="active"><a href="#/feed/hot">hot</a></dd>
+    <dd><a href="#/feed/new">new</a></dd>
+    <dd><a href="#/feed/controversial">controversial</a></dd>
+    <dd><a href="#/feed/top">top</a></dd>
   </dl>
 </div>
 
@@ -76,7 +76,7 @@
 
 <div class="row display" style="text-align: center; display: block;width: 100%;clear: both;">
   <div class="twelve columns centered">
-    <a id="load-more" href="<%= "#/#{@section}/#{@ruddl.last.key}" %>" class="large secondary button">Load More</a>
+    <a id="load-more" href="#/feed/hot" class="large secondary button">Load More</a>
   </div>
 </div>
 

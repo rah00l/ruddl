@@ -104,7 +104,7 @@ class MyApp < Sinatra::Base
   def parse_reddit(item)
     puts 'parsing reddit'
     begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], nil, Nokogiri::HTML(item['data']['selftext_html']).text, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], nil, Nokogiri::HTML(item['data']['selftext_html']).text, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
       rdoc
     rescue => exception
       puts exception
@@ -143,64 +143,40 @@ class MyApp < Sinatra::Base
       url = after.nil? ? "http://www.reddit.com/#{section}.json" : "http://www.reddit.com/#{section}.json?after=#{after}"
       puts "requesting => #{url}"
       @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
-      @feed['data']['children'].each_with_index do |item, index|
-        doc_key = item['data']['name']
-        puts "#{index} => #{doc_key}"
-        if (@@redis.exists(doc_key))
-          puts "#{doc_key} found in cache"
-          rdoc = Marshal.load(@@redis.get(doc_key))
-        else
-          rdoc = parse_feed_item(item)
+      if @feed['data']['children']
+        @feed['data']['children'].each_with_index do |item, index|
+          doc_key = item['data']['name']
+          puts "#{index} => #{doc_key}"
+          if (@@redis.exists(doc_key))
+            puts "#{doc_key} found in cache"
+            rdoc = Marshal.load(@@redis.get(doc_key))
+          else
+            rdoc = parse_feed_item(item)
+          end
+          if not rdoc.nil?
+            ruddl.push(rdoc)
+          end
+          @@redis.set(doc_key, Marshal.dump(rdoc))
+          @@redis.expire(doc_key, 28800)
         end
-        if not rdoc.nil?
-          ruddl.push(rdoc)
-        end
-        @@redis.set(doc_key, Marshal.dump(rdoc))
-        @@redis.expire(doc_key, 28800)
+        @@redis.set(key, Marshal.dump(ruddl))
+        @@redis.expire(key, 30)
       end
-      @@redis.set(key, Marshal.dump(ruddl))
-      @@redis.expire(key, 30)
     end
     ruddl
   end
 
-  get '/scrape' do
-      best_image = nil
-      sized_images = Hash.new
-      uri = URI("http://www.huffingtonpost.com/2012/10/25/president-obama-ayn-rand-misunderstood-teenagers_n_2019618.html")
-      images = Nokogiri::HTML(open(uri)).css('//img/@src').to_a
-      images.each do |image|
-        image = image.to_s
-        puts image
-        if not (['analytics','loader.gif','spacer.gif','blank.gif','gravatar','doubleclick'].any? { |s| image.include?(s) })
-          puts 'got in!'
-          if not (image =~ /^http:/)
-            image = uri.scheme+'://'+uri.host+image
-          end
-          dimensions = FastImage.size(URI.encode(image))
-          sized_images[image] = dimensions
-          if not dimensions.nil?
-            if(dimensions[0] >= 450 and dimensions[0]/dimensions[1] <= 2)
-              best_image = image
-              break
-            end
-          end
-        end
-        if(best_image.nil?)
-          best_image = 'need plan b'
-        end
-        best_image
-      end
-      best_image
+  get '/' do
+    erb :index
   end
 
-  get '/*/:after', '/*' do
+  get '/feed/*/:after', '/feed/*' do
     @section = params[:splat].first
     @section.empty? ? @section = 'hot' : @section
     @after = params[:after]
     if(['hot','new','controversial','top'].include?(@section))
       @ruddl = parse_feed(@section, @after)
-      erb :index, :layout => (request.xhr? ? false : :layout)
+      erb :feed, :layout => false
     end
   end
 end
