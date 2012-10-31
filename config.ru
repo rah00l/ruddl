@@ -7,7 +7,7 @@ require 'open-uri'
 require 'readability'
 require 'redis'
 require 'digest'
-require 'json'
+require 'yajl/json_gem'
 require 'fastimage'
 
 Bundler.require
