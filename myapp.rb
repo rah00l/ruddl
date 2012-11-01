@@ -82,7 +82,7 @@ class MyApp < Sinatra::Base
             dimensions = FastImage.size(image)
             #sized_images[image] = dimensions
             if not dimensions.nil?
-              if(dimensions[0] >= 450 and dimensions[0]/dimensions[1] <= 2)
+              if(dimensions[0] >= 350 and dimensions[0]/dimensions[1] <= 2)
                 best_image = image.to_s
                 break
               end
