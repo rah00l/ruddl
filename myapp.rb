@@ -171,8 +171,31 @@ class MyApp < Sinatra::Base
     ruddl
   end
 
+  set :sockets, []
+
   get '/' do
-    erb :index
+    if !request.websocket?
+      erb :index
+    else
+      request.websocket do |ws|
+        ws.onopen do
+          ws.send("Hello World!")
+          url = "http://www.reddit.com/hot.json"
+          feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
+          feed['data']['children'].each_with_index do |item, index|
+            ws.send(item['data']['name'])
+          end
+          settings.sockets << ws
+        end
+        ws.onmessage do |msg|
+          EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+        end
+        ws.onclose do
+          warn("wetbsocket closed")
+          settings.sockets.delete(ws)
+        end
+      end
+    end
   end
 
   get '/feed/*/:after', '/feed/*' do
