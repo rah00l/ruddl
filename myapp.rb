@@ -174,37 +174,46 @@ class MyApp < Sinatra::Base
   set :sockets, []
 
   get '/' do
-    if !request.websocket?
-      erb :index
-    else
-      request.websocket do |ws|
-        ws.onopen do
-          ws.send("Hello World!")
-          url = "http://www.reddit.com/hot.json"
-          feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
-          feed['data']['children'].each_with_index do |item, index|
-            ws.send(item['data']['name'])
-          end
-          settings.sockets << ws
-        end
-        ws.onmessage do |msg|
-          EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
-        end
-        ws.onclose do
-          warn("wetbsocket closed")
-          settings.sockets.delete(ws)
-        end
-      end
-    end
+    erb :index
   end
 
   get '/feed/*/:after', '/feed/*' do
-    @section = params[:splat].first
-    @section.empty? ? @section = 'hot' : @section
-    @after = params[:after]
-    if(['hot','new','controversial','top'].include?(@section))
-      @ruddl = parse_feed(@section, @after)
-      erb :feed, :layout => false
-    end
+	if request.websocket?
+		@section = params[:splat].first
+		@section.empty? ? @section = 'hot' : @section
+		@after = params[:after]
+		if(['hot','new','controversial','top'].include?(@section))
+			request.websocket do |ws|
+				ws.onopen do
+					url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
+					puts "requesting => #{url}"
+					@feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
+					if @feed['data']['children']
+						@feed['data']['children'].each_with_index do |item, index|
+						  doc_key = item['data']['name']
+						  puts "#{index} => #{doc_key}"
+						  if (@@redis.exists(doc_key))
+							puts "#{doc_key} found in cache"
+							rdoc = Marshal.load(@@redis.get(doc_key))
+						  else
+							rdoc = parse_feed_item(item)
+						  end
+						  @@redis.set(doc_key, Marshal.dump(rdoc))
+						  @@redis.expire(doc_key, 28800)
+						  ws.send(rdoc.to_json)
+						end					
+					end
+					settings.sockets << ws
+				end
+				ws.onmessage do |msg|
+					EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+				end
+				ws.onclose do
+					warn("wetbsocket closed")
+					settings.sockets.delete(ws)
+				end
+			end		  
+		end
+	end
   end
 end
