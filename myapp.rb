@@ -72,11 +72,11 @@ class MyApp < Sinatra::Base
       #sized_images = Hash.new
       images.each do |image|
         image = image.to_s
-        if not (['analytics','button','icon','loader.gif','spacer.gif','clear.gif','transparent.gif','blank.gif','trans.gif','spinner.gif','gravatar','doubleclick','adserver'].any? { |s| image.include?(s) })
+        if not (['analytics','button','icon','loading','loader.gif','spacer.gif','clear.gif','transparent.gif','blank.gif','trans.gif','spinner.gif','gravatar','doubleclick','adserver'].any? { |s| image.include?(s) })
           if not (image =~ /^http:/)
             image = URI::join(uri.scheme+'://'+uri.host,image)
           end
-          image = URI.parse(URI.encode(image, "[]")).to_s
+          image = URI.parse(URI.encode(image.to_s, "[]")).to_s
           unless (image =~ URI::regexp).nil?
             puts "getting the size of => #{image}"
             dimensions = FastImage.size(image)
