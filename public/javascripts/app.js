@@ -24,13 +24,11 @@ $(function() {
 		var template = Handlebars.compile(source);
 				
         var ruddl = function () {
-            this.calcCols(false);
-            container.imagesLoaded(function() {
-                container.masonry({
-                    itemSelector : '.box',
-                    isAnimated: !Modernizr.csstransitions
-                });
-            });
+		   this.calcCols(false);
+		   container.masonry({
+				itemSelector : '.box',
+				isAnimated: !Modernizr.csstransitions
+			});
             this.loadMore(loadMoreBtn, false);
         };
 
@@ -56,40 +54,32 @@ $(function() {
 
         ruddl.prototype = {
             constructor: ruddl,
-            getUpdate : function (section) {
-                currentSection = section.replace('/feed/','');
-                container.load(section, function(data) {
-                    container.imagesLoaded( function() {
-                        container.masonry('reload');
-                    });
-                    updateNextURL();
-                });
-            },
-            loadMore : function(trigger, replace) {
-			    var url = trigger.attr('href').replace('#','');
-				
-				var ws = new WebSocket('ws://' + window.location.host + window.location.pathname + '/' + url);
-				ws.onopen = function(m) {
+            loadMore : function(trigger) {
+				var self = this;
+				var url = trigger.attr('href').replace('#','');
+				var ws = new WebSocket('ws://' + window.location.host + window.location.pathname + url);
+				ws.onopen = function() {
+					self.calcCols(true);
 					trigger.html('Loading...');
 					trigger.css('pointer-events', 'none');
 				};
-				ws.onclose = function(m)  {
+				ws.onclose = function() {
 					trigger.html('Load More');
 					trigger.css('pointer-events', 'auto');				
 					updateNextURL(); 
 				}
-				ws.onmessage = function(m) { 
-					var newElems = $(template(JSON.parse(m.data)));
-					if(replace) {
-						container.html(newElems).masonry('reload');
-					} else {
-						container.append(newElems).masonry('appended', newElems, true);
+				ws.onmessage = function(m) {
+					if (m.data != "null") {
+						var newElems = $(template(JSON.parse(m.data)));
+						container.imagesLoaded( function() {
+							container.append(newElems).masonry('appended', newElems, true);
+						});
 					}
 				};
             },
             calcCols : function (reloadMasonry) {
                 var width = Math.floor(($(window).width()-70)/3);
-                setCols(width);
+				setCols(width);
                 if(reloadMasonry)
                     container.masonry('reload');
             }
@@ -103,12 +93,12 @@ $(function() {
     $('.sub-nav dd').click(function() {
         $('.sub-nav dd').attr('class','');
         $(this).attr('class','active');
-        feed.getUpdate($(this).find('a').attr('href').replace('#',''));
+        feed.loadMore($(this).find('a'));
         return false;
     });
 
     $('#load-more').click(function() {
-        feed.loadMore($(this), false);
+        feed.loadMore($(this));
         return false;
     });
 
