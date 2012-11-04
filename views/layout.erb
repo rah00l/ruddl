@@ -96,13 +96,13 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min.js"></script>
 <!-- Initialize JS Plugins -->
 <script id="ruddl-template" type="text/x-handlebars-template">
-	<div class="box panel">
+	<div id="{{key}}" class="box panel">
 	  <div class='description'>
 		<p class='description_content'>
-		  <a href="#" target="_blank">{{@title}}</a>
+		  <a href="#" target="_blank">{{title}}</a>
 		</p>
 	  </div>
-	  <a href="#" target="_blank"><img src="#"/></a>
+	  <a href="#" target="_blank"><img src="{{image}}"/></a>
 	</div>
 </script>
 <script src="javascripts/app.js"></script>

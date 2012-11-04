@@ -1,6 +1,6 @@
 require './json_able'
 
-class RuddlDoc < JSONable
+class RuddlDoc
   attr_accessor :key, :title, :image, :text, :link, :premalink
 
   def initialize(key, title, image, text, link, premalink)
@@ -18,5 +18,9 @@ class RuddlDoc < JSONable
 
   def marshal_load array
     @key, @title, @image, @text, @link, @premalink = array
+  end
+  
+  def to_json
+    {'key' => @key, 'title' => @title, 'image' => @image, 'text' => @text, 'link' => @link, 'premalink' => @premalink}.to_json
   end
 end
