@@ -99,10 +99,14 @@
 	<div id="{{key}}" class="box panel">
 	  <div class='description'>
 		<p class='description_content'>
-		  <a href="#" target="_blank">{{title}}</a>
+		  <a href="{{premalink}}" target="_blank">{{title}}</a>
 		</p>
 	  </div>
-	  <a href="#" target="_blank"><img src="{{image}}"/></a>
+        {{#if image}}
+            <a href="{{link}}" target="_blank"><img src="{{image}}"/></a>
+        {{else}}
+            {{text}}
+        {{/if}}
 	</div>
 </script>
 <script src="javascripts/app.js"></script>
