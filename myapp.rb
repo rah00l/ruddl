@@ -185,18 +185,26 @@ class MyApp < Sinatra::Base
 		if(['hot','new','controversial','top'].include?(@section))
 			request.websocket do |ws|
 				ws.onopen do
-					url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
-					puts "requesting => #{url}"
-					@feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
+          url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
+          if (@@redis.exists(url))
+            puts "loading from cache => #{url}"
+            @feed = Marshal.load(@@redis.get(url))
+          else
+            puts "requesting => #{url}"
+            @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
+            @@redis.set(url, Marshal.dump(@feed))
+            @@redis.expire(url, 30)
+          end
+
 					if @feed['data']['children']
 						@feed['data']['children'].each_with_index do |item, index|
 						  doc_key = item['data']['name']
 						  puts "#{index} => #{doc_key}"
 						  if (@@redis.exists(doc_key))
-							puts "#{doc_key} found in cache"
-							rdoc = Marshal.load(@@redis.get(doc_key))
+                puts "#{doc_key} found in cache"
+                rdoc = Marshal.load(@@redis.get(doc_key))
 						  else
-							rdoc = parse_feed_item(item)
+							  rdoc = parse_feed_item(item)
 						  end
 						  @@redis.set(doc_key, Marshal.dump(rdoc))
 						  @@redis.expire(doc_key, 28800)
