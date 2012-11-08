@@ -38,7 +38,7 @@ class MyApp < Sinatra::Base
       image = album_json['album']['images'][0]['image']['hash']
     end
     ext = (File.extname(image).length == 0) ? '.jpg' : ''
-    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image+ext), nil, item['data']['url'],URI.join('http://reddit.com/', item['data']['permalink']))
+    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image+ext), nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
     rdoc
   end
 
@@ -53,7 +53,7 @@ class MyApp < Sinatra::Base
 
   def parse_wikipedia(item)
     puts 'parsing wikipedia'
-    title = URI(item['data']['url']).path.gsub('/wiki/','')
+    title = URI(item['data']['url']).path.gsub('/wiki/', '')
     wiki_json = JSON.parse(open("http://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&format=json&iiprop=url&iilimit=1&generator=images&titles=#{title}&gimlimit=1").read)
     begin
       rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
@@ -72,9 +72,9 @@ class MyApp < Sinatra::Base
       #sized_images = Hash.new
       images.each do |image|
         image = image.to_s
-        if not (['analytics','button','icon','loading','loader.gif','spacer.gif','clear.gif','transparent.gif','blank.gif','trans.gif','spinner.gif','gravatar','doubleclick','adserver'].any? { |s| image.include?(s) })
+        if not (['analytics', 'button', 'icon', 'loading', 'loader.gif', 'spacer.gif', 'clear.gif', 'transparent.gif', 'blank.gif', 'trans.gif', 'spinner.gif', 'gravatar', 'doubleclick', 'adserver'].any? { |s| image.include?(s) })
           if not (image =~ /^http:/)
-            image = URI::join(uri.scheme+'://'+uri.host,image)
+            image = URI::join(uri.scheme+'://'+uri.host, image)
           end
           image = URI.parse(URI.encode(image.to_s, "[]")).to_s
           unless (image =~ URI::regexp).nil?
@@ -82,7 +82,7 @@ class MyApp < Sinatra::Base
             dimensions = FastImage.size(image)
             #sized_images[image] = dimensions
             if not dimensions.nil?
-              if(dimensions[0] >= 350 and dimensions[0]/dimensions[1] <= 2)
+              if (dimensions[0] >= 350 and dimensions[0]/dimensions[1] <= 2)
                 best_image = image.to_s
                 break
               end
@@ -178,50 +178,50 @@ class MyApp < Sinatra::Base
   end
 
   get '/feed/*/:after', '/feed/*' do
-	if request.websocket?
-		@section = params[:splat].first
-		@section.empty? ? @section = 'hot' : @section
-		@after = params[:after]
-		if(['hot','new','controversial','top'].include?(@section))
-			request.websocket do |ws|
-				ws.onopen do
-          url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
-          if (@@redis.exists(url))
-            puts "loading from cache => #{url}"
-            @feed = Marshal.load(@@redis.get(url))
-          else
-            puts "requesting => #{url}"
-            @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
-            @@redis.set(url, Marshal.dump(@feed))
-            @@redis.expire(url, 30)
-          end
+    if request.websocket?
+      @section = params[:splat].first
+      @section.empty? ? @section = 'hot' : @section
+      @after = params[:after]
+      if (['hot', 'new', 'controversial', 'top'].include?(@section))
+        request.websocket do |ws|
+          ws.onopen do
+            url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
+            if (@@redis.exists(url))
+              puts "loading from cache => #{url}"
+              @feed = Marshal.load(@@redis.get(url))
+            else
+              puts "requesting => #{url}"
+              @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
+              @@redis.set(url, Marshal.dump(@feed))
+              @@redis.expire(url, 30)
+            end
 
-					if @feed['data']['children']
-						@feed['data']['children'].each_with_index do |item, index|
-						  doc_key = item['data']['name']
-						  puts "#{index} => #{doc_key}"
-						  if (@@redis.exists(doc_key))
-                puts "#{doc_key} found in cache"
-                rdoc = Marshal.load(@@redis.get(doc_key))
-						  else
-							  rdoc = parse_feed_item(item)
-						  end
-						  @@redis.set(doc_key, Marshal.dump(rdoc))
-						  @@redis.expire(doc_key, 28800)
-						  ws.send(rdoc.to_json)
-						end					
-					end
-					settings.sockets << ws
-				end
-				ws.onmessage do |msg|
-					EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
-				end
-				ws.onclose do
-					warn("wetbsocket closed")
-					settings.sockets.delete(ws)
-				end
-			end		  
-		end
-	end
+            if @feed['data']['children']
+              @feed['data']['children'].each_with_index do |item, index|
+                doc_key = item['data']['name']
+                puts "#{index} => #{doc_key}"
+                if (@@redis.exists(doc_key))
+                  puts "#{doc_key} found in cache"
+                  rdoc = Marshal.load(@@redis.get(doc_key))
+                else
+                  rdoc = parse_feed_item(item)
+                end
+                @@redis.set(doc_key, Marshal.dump(rdoc))
+                @@redis.expire(doc_key, 28800)
+                ws.send(rdoc.to_json)
+              end
+            end
+            settings.sockets << ws
+          end
+          ws.onmessage do |msg|
+            EM.next_tick { settings.sockets.each { |s| s.send(msg) } }
+          end
+          ws.onclose do
+            warn("wetbsocket closed")
+            settings.sockets.delete(ws)
+          end
+        end
+      end
+    end
   end
 end
