@@ -17,6 +17,14 @@
 
 $(function() {
     var ruddl = (function () {
+        var pusher = new Pusher('5521578d0346d88fe734');
+        var channel = pusher.subscribe('ruddl');
+        var socketId = null;
+
+        Pusher.log = function(message) {
+            if (window.console && window.console.log) window.console.log(message);
+        };
+
         var container = $('#container');
         var loadMoreBtn = $('#load-more');
         var currentSection = 'hot';
@@ -57,25 +65,32 @@ $(function() {
             loadMore : function(trigger) {
 				var self = this;
 				var url = trigger.attr('href').replace('#','');
-				var ws = new WebSocket('ws://' + window.location.host + window.location.pathname + url);
-				ws.onopen = function() {
-					self.calcCols(true);
-					trigger.html('Loading...');
-					trigger.css('pointer-events', 'none');
-				};
-				ws.onclose = function() {
-					trigger.html('Load More');
-					trigger.css('pointer-events', 'auto');				
-					updateNextURL(); 
-				}
-				ws.onmessage = function(m) {
-					if (m.data != "null") {
-						var newElems = $(template(JSON.parse(m.data)));
-						container.imagesLoaded( function() {
-							container.append(newElems).masonry('appended', newElems, true);
-						});
-					}
-				};
+
+                pusher.connection.bind('connected', function() {
+                    socketId = pusher.connection.socket_id;
+                    self.calcCols(true);
+                    trigger.html('Loading...');
+                    trigger.css('pointer-events', 'none');
+
+                    jQuery.ajax({
+                        url: url,
+                        type: "get",
+                        data: {
+                            socket_id: socketId
+                        }
+                    }).done(function() {
+                        channel.bind('feed', function(data) {
+                            console.log(data);
+
+                            if (data != "null") {
+                                var newElems = $(template(data));
+                                container.imagesLoaded( function() {
+                                    container.append(newElems).masonry('appended', newElems, true);
+                                });
+                            }
+                        });
+                    });
+                });
             },
             calcCols : function (reloadMasonry) {
                 var width = Math.floor(($(window).width()-70)/3);

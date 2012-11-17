@@ -10,6 +10,10 @@ class MyApp < Sinatra::Base
   register Sinatra::MultiRoute
 
   configure :development, :test do
+    Pusher.app_id = '31874'
+    Pusher.key    = '5521578d0346d88fe734'
+    Pusher.secret = 'd3b3be3d1db365f4b9e1'
+
     enable :logging, :dump_errors, :raise_errors
     register Sinatra::Reloader
   end
@@ -178,50 +182,36 @@ class MyApp < Sinatra::Base
   end
 
   get '/feed/*/:after', '/feed/*' do
-    if request.websocket?
-      @section = params[:splat].first
-      @section.empty? ? @section = 'hot' : @section
-      @after = params[:after]
-      if (['hot', 'new', 'controversial', 'top'].include?(@section))
-        request.websocket do |ws|
-          ws.onopen do
-            url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
-            if (@@redis.exists(url))
-              puts "loading from cache => #{url}"
-              @feed = Marshal.load(@@redis.get(url))
-            else
-              puts "requesting => #{url}"
-              @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
-              @@redis.set(url, Marshal.dump(@feed))
-              @@redis.expire(url, 30)
-            end
+    @section = params[:splat].first
+    @section.empty? ? @section = 'hot' : @section
+    @after = params[:after]
+    if (['hot', 'new', 'controversial', 'top'].include?(@section))
+        url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
+        if (@@redis.exists(url))
+          puts "loading from cache => #{url}"
+          @feed = Marshal.load(@@redis.get(url))
+        else
+          puts "requesting => #{url}"
+          @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
+          @@redis.set(url, Marshal.dump(@feed))
+          @@redis.expire(url, 30)
+        end
 
-            if @feed['data']['children']
-              @feed['data']['children'].each_with_index do |item, index|
-                doc_key = item['data']['name']
-                puts "#{index} => #{doc_key}"
-                if (@@redis.exists(doc_key))
-                  puts "#{doc_key} found in cache"
-                  rdoc = Marshal.load(@@redis.get(doc_key))
-                else
-                  rdoc = parse_feed_item(item)
-                end
-                @@redis.set(doc_key, Marshal.dump(rdoc))
-                @@redis.expire(doc_key, 28800)
-                ws.send(rdoc.to_json)
-              end
+        if @feed['data']['children']
+          @feed['data']['children'].each_with_index do |item, index|
+            doc_key = item['data']['name']
+            puts "#{index} => #{doc_key}"
+            if (@@redis.exists(doc_key))
+              puts "#{doc_key} found in cache"
+              rdoc = Marshal.load(@@redis.get(doc_key))
+            else
+              rdoc = parse_feed_item(item)
             end
-            settings.sockets << ws
-          end
-          ws.onmessage do |msg|
-            EM.next_tick { settings.sockets.each { |s| s.send(msg) } }
-          end
-          ws.onclose do
-            warn("wetbsocket closed")
-            settings.sockets.delete(ws)
+            @@redis.set(doc_key, Marshal.dump(rdoc))
+            @@redis.expire(doc_key, 28800)
+            Pusher['ruddl'].trigger('feed', rdoc.to_json, params[:socket_id])
           end
         end
-      end
     end
   end
 end
