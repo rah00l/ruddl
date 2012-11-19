@@ -181,7 +181,7 @@ class MyApp < Sinatra::Base
     erb :index
   end
 
-  get '/feed/*/:after', '/feed/*' do
+  get '/feed/*/:after/:socket_id', '/feed/*/:socket_id' do
     @section = params[:splat].first
     @section.empty? ? @section = 'hot' : @section
     @after = params[:after]
