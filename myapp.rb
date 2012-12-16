@@ -212,6 +212,7 @@ class MyApp < Sinatra::Base
             Pusher['ruddl'].trigger('feed', rdoc.to_json, params[:socket_id])
           end
         end
+        status 200
     end
   end
 end

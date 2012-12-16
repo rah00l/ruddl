@@ -17,12 +17,10 @@
 
 $(function() {
     var ruddl = (function () {
-        var pusher = new Pusher('5521578d0346d88fe734');
-        var channel = pusher.subscribe('ruddl');
-        var socketId = null;
-        Pusher.log = function(message) {
+        /*Pusher.log = function(message) {
             if (window.console && window.console.log) window.console.log(message);
-        };
+        };*/
+        var socketId = null;
 
         var container = $('#container');
         var loadMoreBtn = $('#load-more');
@@ -32,6 +30,7 @@ $(function() {
 				
         var ruddl = function () {
             var self = this;
+            var pusher = new Pusher('5521578d0346d88fe734');
             pusher.connection.bind('connected', function() {
                 socketId = pusher.connection.socket_id;
                 self.calcCols(false);
@@ -66,12 +65,14 @@ $(function() {
         ruddl.prototype = {
             constructor: ruddl,
             loadMore : function(trigger) {
-				var self = this;
+                var self = this;
 				var url = trigger.attr('href').replace('#','') + '/' + socketId;
 
                 trigger.html('Loading...');
                 trigger.css('pointer-events', 'none');
 
+                var pusher = new Pusher('5521578d0346d88fe734');
+                var channel = pusher.subscribe('ruddl');
                 channel.bind('feed', function(data) {
                     if (data != "null") {
                         var newElems = $(template(data));
@@ -87,9 +88,9 @@ $(function() {
                     $.ajax({
                         type: 'get',
                         url: url
-                    }).done(function() {
-                        trigger.html('Load More');
-                        trigger.css('pointer-events', 'auto');
+                    }).complete(function() {
+                            trigger.html('Load More');
+                            trigger.css('pointer-events', 'auto');
                     });
                 });
             },
