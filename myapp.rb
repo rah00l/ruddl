@@ -181,6 +181,13 @@ class MyApp < Sinatra::Base
     erb :index
   end
 
+  get '/app.js' do
+    headers \
+      "Content-Type" => "text/javascript"
+
+    ERB.new(File.read('app.js')).result
+  end
+
   get '/feed/*/:after/:socket_id', '/feed/*/:socket_id' do
     @section = params[:splat].first
     @section.empty? ? @section = 'hot' : @section

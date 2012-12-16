@@ -20,6 +20,7 @@ $(function() {
         /*Pusher.log = function(message) {
             if (window.console && window.console.log) window.console.log(message);
         };*/
+        var key = '<%= Pusher.key %>'
         var socketId = null;
 
         var container = $('#container');
@@ -30,7 +31,7 @@ $(function() {
 				
         var ruddl = function () {
             var self = this;
-            var pusher = new Pusher('5521578d0346d88fe734');
+            var pusher = new Pusher(key);
             pusher.connection.bind('connected', function() {
                 socketId = pusher.connection.socket_id;
                 self.calcCols(false);
@@ -71,7 +72,7 @@ $(function() {
                 trigger.html('Loading...');
                 trigger.css('pointer-events', 'none');
 
-                var pusher = new Pusher('5521578d0346d88fe734');
+                var pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
                 channel.bind('feed', function(data) {
                     if (data != "null") {
