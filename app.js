@@ -54,13 +54,13 @@ $(function() {
             theRules[0].style.width = width+'px';
         };
 
-        var updateNextURL = function(newElems) {
+        var updateNextURL = function() {
 			var newElems = $($('#container').html());
             var lastElem = newElems[newElems.length-1];
             var uri = new URI(loadMoreBtn.attr('href').replace('#',''));
             uri.segment(1, currentSection);
             uri.segment(2, lastElem.id);
-            $('#load-more').attr('href', '#'+uri.toString());
+            $('#load-more').attr('href', '#' + uri.toString());
         };
 
         ruddl.prototype = {
@@ -90,8 +90,9 @@ $(function() {
                         type: 'get',
                         url: url
                     }).complete(function() {
-                            trigger.html('Load More');
-                            trigger.css('pointer-events', 'auto');
+                        trigger.html('Load More');
+                        trigger.css('pointer-events', 'auto');
+                        updateNextURL();
                     });
                 });
             },
