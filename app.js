@@ -39,7 +39,7 @@ $(function() {
                     itemSelector : '.box',
                     isAnimated: !Modernizr.csstransitions
                 });
-                self.loadMore(loadMoreBtn);
+                self.loadMore(loadMoreBtn.attr('href').replace('#',''), loadMoreBtn.attr('data-section'), false);
             });
         };
 
@@ -65,16 +65,25 @@ $(function() {
 
         ruddl.prototype = {
             constructor: ruddl,
-            loadMore : function(trigger) {
+            changeSection: function(trigger) {
+                var url = '/feed/' + trigger.attr('data-section');
+                this.loadMore(url, trigger.attr('data-section'), true);
+                return false;
+            },
+            loadMore : function(url, section, reset) {
                 var self = this;
-				var url = trigger.attr('href').replace('#','') + '/' + socketId;
+                url =  url + '/' + socketId;
 
-                trigger.html('Loading...');
-                trigger.css('pointer-events', 'none');
+                if(reset) {
+                    container.empty();
+                }
+
+                loadMoreBtn.html('Loading...');
+                loadMoreBtn.css('pointer-events', 'none');
 
                 var pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
-                channel.bind('feed', function(data) {
+                channel.bind(section, function(data) {
                     if (data != "null") {
                         var newElems = $(template(data));
                         container.imagesLoaded( function() {
@@ -90,8 +99,8 @@ $(function() {
                         type: 'get',
                         url: url
                     }).complete(function() {
-                        trigger.html('Load More');
-                        trigger.css('pointer-events', 'auto');
+                        loadMoreBtn.html('Load More');
+                        loadMoreBtn.css('pointer-events', 'auto');
                         updateNextURL();
                     });
                 });
@@ -112,8 +121,7 @@ $(function() {
     $('.sub-nav dd').click(function() {
         $('.sub-nav dd').attr('class','');
         $(this).attr('class','active');
-        feed.loadMore($(this).find('a'));
-        return false;
+        feed.changeSection($(this).find('a'));
     });
 
     $('#load-more').click(function() {

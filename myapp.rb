@@ -216,7 +216,7 @@ class MyApp < Sinatra::Base
             end
             @@redis.set(doc_key, Marshal.dump(rdoc))
             @@redis.expire(doc_key, 28800)
-            Pusher['ruddl'].trigger('feed', rdoc.to_json, params[:socket_id])
+            Pusher['ruddl'].trigger(@section, rdoc.to_json, params[:socket_id])
           end
         end
         status 200
