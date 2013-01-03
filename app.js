@@ -86,10 +86,11 @@ $(function() {
                 channel.bind(section, function(data) {
                     if (data != "null") {
                         var newElems = $(template(data));
+                        container.append(newElems).masonry('appended', newElems, true);
                         container.imagesLoaded( function() {
-                            container.append(newElems).masonry('appended', newElems, true);
+                            //self.calcCols(true);
+                            container.masonry('reload');
                         });
-                        self.calcCols(true);
                     }
                 });
 
