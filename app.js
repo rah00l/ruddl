@@ -34,6 +34,7 @@ $(function() {
             var pusher = new Pusher(key);
             pusher.connection.bind('connected', function() {
                 socketId = pusher.connection.socket_id;
+                console.log(socketId);
                 self.calcCols(false);
                 container.masonry({
                     itemSelector : '.box',
@@ -83,7 +84,7 @@ $(function() {
 
                 var pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
-                channel.bind(section, function(data) {
+                channel.bind(section+'-'+socketId, function(data) {
                     if (data != "null") {
                         var newElems = $(template(data));
                         container.append(newElems).masonry('appended', newElems, true);
@@ -95,7 +96,6 @@ $(function() {
                 });
 
                 channel.bind('pusher:subscription_succeeded', function() {
-                    console.log('calling: '+url);
                     $.ajax({
                         type: 'get',
                         url: url
