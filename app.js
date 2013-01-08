@@ -25,7 +25,10 @@ $(function() {
 
         var container = $('#container');
         var loadMoreBtn = $('#load-more');
+
         var currentSection = 'hot';
+        var currentSubreddit = 'front';
+
 		var source = $("#ruddl-template").html();
 		var template = Handlebars.compile(source);
 				
@@ -59,19 +62,27 @@ $(function() {
 			var newElems = $($('#container').html());
             var lastElem = newElems[newElems.length-1];
             var uri = new URI(loadMoreBtn.attr('href').replace('#',''));
-            uri.segment(1, currentSection);
-            uri.segment(2, lastElem.id);
+            uri.segment(1, currentSubreddit);
+            uri.segment(2, currentSection);
+            uri.segment(3, lastElem.id);
             $('#load-more').attr('href', '#' + uri.toString());
         };
 
         ruddl.prototype = {
             constructor: ruddl,
-            changeSection: function(trigger) {
-                var url = '/feed/' + trigger.attr('data-section');
-                this.loadMore(url, trigger.attr('data-section'), true);
+            changeSection: function(section) {
+                currentSection = section;
+                var url = '/feed/' + currentSubreddit + '/' + currentSection;
+                this.loadMore(url, true);
                 return false;
             },
-            loadMore : function(url, section, reset) {
+            changeSubreddit: function(subreddit) {
+                currentSubreddit = subreddit;
+                var url = '/feed/' + currentSubreddit + '/' + currentSection;
+                this.loadMore(url, true);
+                return false;
+            },
+            loadMore : function(url, reset) {
                 var self = this;
                 url =  url + '/' + socketId;
 
@@ -84,7 +95,7 @@ $(function() {
 
                 var pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
-                channel.bind(section+'-'+socketId, function(data) {
+                channel.bind(currentSubreddit+'-'+currentSection+'-'+socketId, function(data) {
                     if (data != "null") {
                         var newElems = $(template(data));
                         container.append(newElems).masonry('appended', newElems, true);
@@ -119,14 +130,20 @@ $(function() {
 
     var feed = new ruddl();
 
+    $("#selSubreddit").change(function() {
+        var subreddit = $(this).find(":selected").val();
+        feed.changeSubreddit(subreddit);
+    });
+
     $('.sub-nav dd').click(function() {
         $('.sub-nav dd').attr('class','');
         $(this).attr('class','active');
-        feed.changeSection($(this).find('a'));
+        var setion = $(this).find('a').attr('data-section');
+        feed.changeSection(setion);
     });
 
     $('#load-more').click(function() {
-        feed.loadMore($(this));
+        feed.loadMore($(this).attr('href').replace('#',''), $(this).attr('data-section'), false);
         return false;
     });
 

@@ -188,12 +188,18 @@ class MyApp < Sinatra::Base
     ERB.new(File.read('app.js')).result
   end
 
-  get '/feed/*/:after/:socket_id', '/feed/*/:socket_id' do
-    @section = params[:splat].first
+  get '/feed/*/*/:after/:socket_id', '/feed/*/*/:socket_id' do
+    @subreddit = params[:splat][0]
+    @section = params[:splat][1]
     @section.empty? ? @section = 'hot' : @section
     @after = params[:after]
     if (['hot', 'new', 'controversial', 'top'].include?(@section))
-        url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
+        if @subreddit == 'front'
+          url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
+        else
+          url = @after.nil? ? "http://www.reddit.com/r/#{@subreddit}/#{@section}.json" : "http://www.reddit.com/r/#{@subreddit}/#{@section}.json?after=#{@after}"
+        end
+
         if (@@redis.exists(url))
           puts "loading from cache => #{url}"
           @feed = Marshal.load(@@redis.get(url))
@@ -216,7 +222,7 @@ class MyApp < Sinatra::Base
             end
             @@redis.set(doc_key, Marshal.dump(rdoc))
             @@redis.expire(doc_key, 28800)
-            Pusher['ruddl'].trigger("#{@section}-#{params[:socket_id]}", rdoc.to_json)
+            Pusher['ruddl'].trigger("#{@subreddit}-#{@section}-#{params[:socket_id]}", rdoc.to_json)
           end
         end
         status 200
