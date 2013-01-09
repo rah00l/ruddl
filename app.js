@@ -22,6 +22,7 @@ $(function() {
         };*/
         var key = '<%= Pusher.key %>'
         var socketId = null;
+        var pusher = null;
 
         var container = $('#container');
         var loadMoreBtn = $('#load-more');
@@ -71,12 +72,14 @@ $(function() {
         ruddl.prototype = {
             constructor: ruddl,
             changeSection: function(section) {
+                pusher.disconnect();
                 currentSection = section;
                 var url = '/feed/' + currentSubreddit + '/' + currentSection;
                 this.loadMore(url, true);
                 return false;
             },
             changeSubreddit: function(subreddit) {
+                pusher.disconnect();
                 currentSubreddit = subreddit;
                 var url = '/feed/' + currentSubreddit + '/' + currentSection;
                 this.loadMore(url, true);
@@ -93,7 +96,7 @@ $(function() {
                 loadMoreBtn.html('Loading...');
                 loadMoreBtn.css('pointer-events', 'none');
 
-                var pusher = new Pusher(key);
+                pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
                 channel.bind(currentSubreddit+'-'+currentSection+'-'+socketId, function(data) {
                     if (data != "null") {
