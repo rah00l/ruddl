@@ -5,6 +5,7 @@ All content shown is provided by Reddit API. ruddl is merely a new interface to 
 
 TODO:
 - Favicons to indicate wheather it's an external link or reddit post (using http://getfavicon.appspot.com/)
+- Use image proxy (https://github.com/eahanson/imageproxy)
 - Ability to login and up/down vote
 - Inline video/gallery/zoom controls
-- Infinity scrolling
+- Fix Load More
