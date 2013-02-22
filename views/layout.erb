@@ -111,20 +111,25 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/masonry/2.1.04/jquery.masonry.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/URI.js/1.7.2/URI.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min.js"></script>
-<script src="http://js.pusher.com/1.12/pusher.min.js"></script>
+<script src="//js.pusher.com/1.12/pusher.min.js"></script>
 <!-- Initialize JS Plugins -->
 <script id="ruddl-template" type="text/x-handlebars-template">
 	<div id="{{key}}" class="box panel">
 	  <div class='description'>
-		<p class='description_content'>
+		<div class='description_content'>
 		  <a href="{{premalink}}" target="_blank">{{title}}</a>
-		</p>
+		</div>
+        <div class='icon'>
+          <img src="http://g.etfv.co/{{link}}" width="16" height="16" />
+        </div>
 	  </div>
+      <div class="content">
         {{#if image}}
-            <a href="{{link}}" target="_blank"><img src="{{image}}"/></a>
+            <a href="{{link}}" target="_blank"><img class="lazy" src="{{image}}"/></a>
         {{else}}
             {{{text}}}
         {{/if}}
+      </div>
 	</div>
 </script>
 <script src="/app.js"></script>
