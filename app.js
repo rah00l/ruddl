@@ -43,7 +43,7 @@ $(function() {
                 self.calcCols(false);
                 container.masonry({
                     itemSelector : '.box',
-                    isAnimated: !Modernizr.csstransitions
+                    isAnimated: false
                 });
                 self.loadMore(loadMoreBtn.attr('href').replace('#',''), loadMoreBtn.attr('data-section'), false);
             });
