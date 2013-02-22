@@ -15,5 +15,6 @@ require 'pusher'
 Bundler.require
 
 require './ruddl_doc'
+require './ruddl'
 require './myapp'
 run MyApp
