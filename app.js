@@ -29,6 +29,7 @@ $(function() {
 
         var currentSection = 'hot';
         var currentSubreddit = 'front';
+        var currentAfter = '0';
 
 		var source = $("#ruddl-template").html();
 		var template = Handlebars.compile(source);
@@ -74,20 +75,28 @@ $(function() {
             changeSection: function(section) {
                 pusher.disconnect();
                 currentSection = section;
-                var url = '/feed/' + currentSubreddit + '/' + currentSection;
+                var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
                 this.loadMore(url, true);
                 return false;
             },
             changeSubreddit: function(subreddit) {
                 pusher.disconnect();
                 currentSubreddit = subreddit;
-                var url = '/feed/' + currentSubreddit + '/' + currentSection;
+                var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
                 this.loadMore(url, true);
+                return false;
+            },
+            changeAfter: function(after) {
+                pusher.disconnect();
+                currentAfter = after;
+                var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
+                this.loadMore(url, false);
                 return false;
             },
             loadMore : function(url, reset) {
                 var self = this;
                 url =  url + '/' + socketId;
+                console.log(url);
 
                 if(reset) {
                     container.empty();
@@ -98,7 +107,7 @@ $(function() {
 
                 pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
-                channel.bind(currentSubreddit+'-'+currentSection+'-'+socketId, function(data) {
+                channel.bind(currentSubreddit+'-'+currentSection+'-'+currentAfter+'-'+socketId, function(data) {
                     if (data != "null") {
                         var newElems = $(template(data));
                         container.append(newElems).masonry('appended', newElems, true);
@@ -146,7 +155,9 @@ $(function() {
     });
 
     $('#load-more').click(function() {
-        feed.loadMore($(this).attr('href').replace('#',''), $(this).attr('data-section'), false);
+        var uri = new URI($(this).attr('href').replace('#',''));
+        var after = uri.segment(3);
+        feed.changeAfter(after);
         return false;
     });
 

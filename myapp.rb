@@ -40,7 +40,8 @@ class MyApp < Sinatra::Base
     @subreddit = params[:splat][0]
     @section = params[:splat][1]
     @section.empty? ? @section = 'hot' : @section
-    @after = params[:after]
+    @after = params[:after];
+    @after.empty? ? @after = '0' : params[:after]
     if (['hot', 'new', 'controversial', 'top'].include?(@section))
         if @subreddit == 'front'
           url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
@@ -71,7 +72,7 @@ class MyApp < Sinatra::Base
             end
             @@redis.set(doc_key, Marshal.dump(rdoc))
             @@redis.expire(doc_key, 28800)
-            Pusher['ruddl'].trigger("#{@subreddit}-#{@section}-#{params[:socket_id]}", rdoc.to_json)
+            Pusher['ruddl'].trigger("#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}", rdoc.to_json)
           end
         end
         status 200

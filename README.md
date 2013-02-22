@@ -7,4 +7,3 @@ TODO:
 - Use image proxy (https://github.com/eahanson/imageproxy)
 - Ability to login and up/down vote
 - Inline video/gallery/zoom controls
-- Fix Load More
