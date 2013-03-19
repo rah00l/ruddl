@@ -87,7 +87,8 @@ class MyApp < Sinatra::Base
     comments = Array.new
     data[1]['data']['children'].each_with_index do |item, index|
       if (item['data']['body'])
-        comments.push(item['data']['body'])
+        item['data']['body_html'] = Nokogiri::HTML(item['data']['body_html']).text
+        comments.push(item['data'])
       end
     end
     comments.to_json

@@ -9,6 +9,26 @@
     word-wrap: break-word;
 }
 
+.comments p{
+    margin: 0px;
+    padding: 0px;
+}
+
+.comments .md {
+    padding: 0px;
+    font-size: small;
+    word-wrap: break-word;
+}
+
+.comment {
+    margin-bottom: 10px;
+}
+
+.tagline {
+    color: #888;
+    font-size: x-small;
+}
+
 .subreddits {
     color: #CCCCCC;
     padding-left: 10px;

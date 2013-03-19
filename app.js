@@ -33,6 +33,9 @@ $(function() {
 
 		var source = $("#ruddl-template").html();
 		var template = Handlebars.compile(source);
+
+        var commentSource = $("#ruddl-comment-template").html();
+        var commentTemplate = Handlebars.compile(commentSource);
 				
         var ruddl = function () {
             var self = this;
@@ -58,11 +61,10 @@ $(function() {
                         type:'GET',
                         url: '/comments/'+key.split('_')[1],
                         success:function (data) {
-                            var ul = $('<ul>');
                             $.each(data, function(index, item){
-                                ul.append($('<li></li>').html(item));
+                                var newComment = $(commentTemplate(item));
+                                comments.append(newComment);
                             });
-                            comments.html(ul);
                             comments.slideToggle();
                             content.slideToggle();
                         }
