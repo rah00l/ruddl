@@ -118,8 +118,12 @@ $(function() {
             },
             calcCols : function (reloadMasonry) {
                 $('div.box').css('width', function(index) {
-                    return Math.floor(($(window).width()-70)/3);
+                    var winWidth = $(window).width()-50;
+                    var cols = winWidth > 800 ? (winWidth > 1600 ? 4 : 3) : (winWidth > 600 ? 2 : 1);
+                    return Math.floor(winWidth/cols);
                 });
+
+                $('div.box').css('display','inline');
 
                 if(reloadMasonry)
                     container.masonry('reload');
