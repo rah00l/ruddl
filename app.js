@@ -47,6 +47,32 @@ $(function() {
                 });
                 self.loadMore(loadMoreBtn.attr('href').replace('#',''), loadMoreBtn.attr('data-section'), false);
             });
+
+            $('.premalink').live('click', function() {
+                var key = $(this).attr('data-id');
+                var comments = $('#'+key).find('.comments');
+                var content = $('#'+key).find('.content');
+                comments.height(content.height()-20);
+                if(comments.html().length == 0) {
+                    $.ajax({
+                        type:'GET',
+                        url: '/comments/'+key.split('_')[1],
+                        success:function (data) {
+                            var ul = $('<ul>');
+                            $.each(data, function(index, item){
+                                ul.append($('<li></li>').html(item));
+                            });
+                            comments.html(ul);
+                            comments.slideToggle();
+                            content.slideToggle();
+                        }
+                    });
+                } else {
+                    comments.slideToggle();
+                    content.slideToggle();
+                }
+                return false;
+            });
         };
 
         var updateNextURL = function() {

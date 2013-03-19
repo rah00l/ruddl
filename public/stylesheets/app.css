@@ -44,6 +44,14 @@ div.description{
     overflow: auto;
 }
 
+div.comments{
+    display: none;
+    background-color:#DDD;
+    padding:10px;
+    overflow: auto !important;
+    word-wrap: break-word;
+}
+
 .description_content{
     float: left;
     width: 90%;
