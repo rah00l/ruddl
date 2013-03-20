@@ -111,8 +111,14 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/masonry/2.1.04/jquery.masonry.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/URI.js/1.7.2/URI.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.1.0/jquery.timeago.min.js"></script>
 <script src="//js.pusher.com/1.12/pusher.min.js"></script>
 <!-- Initialize JS Plugins -->
+<script type="text/javascript">
+    Handlebars.registerHelper('date_format', function(context, block) {
+        return $.timeago(new Date(context*1000));
+    });
+</script>
 <script id="ruddl-template" type="text/x-handlebars-template">
 	<div id="{{key}}" class="box panel">
 	  <div class='description'>
@@ -137,9 +143,10 @@
   <div class="comment">
     <p class="tagline">
       <a target="_blank" href="http://www.reddit.com/user/{{author}}" class="author">{{author}}</a>
-      <span class="time">{{time}}</span>
+      <span class="points">{{points}} points</span><span class="time">{{date_format created_utc}}</span>
     </p>
     {{{body_html}}}
+    <a target="_blank" class="permalink" href="{{permalink}}">permalink</a>
   </div>
 </script>
 <script src="/app.js"></script>

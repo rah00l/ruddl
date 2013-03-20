@@ -83,11 +83,13 @@ class MyApp < Sinatra::Base
     content_type :json
     @id = params[:id]
     puts @id
-    data = JSON.parse(open("http://www.reddit.com/comments/#{@id}.json?depth=1&limit=10&sort=best", "User-Agent" => "ruddl by /u/jesalg").read)
+    @data = JSON.parse(open("http://www.reddit.com/comments/#{@id}.json?depth=1&limit=10&sort=best", "User-Agent" => "ruddl by /u/jesalg").read)
     comments = Array.new
-    data[1]['data']['children'].each_with_index do |item, index|
+    @data[1]['data']['children'].each_with_index do |item, index|
       if (item['data']['body'])
         item['data']['body_html'] = Nokogiri::HTML(item['data']['body_html']).text
+        item['data']['points'] = item['data']['ups'] - item['data']['downs']
+        item['data']['permalink'] = "http://www.reddit.com#{@data[0]['data']['children'][0]['data']['permalink']}#{item['data']['id']}"
         comments.push(item['data'])
       end
     end
