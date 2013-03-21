@@ -41,20 +41,15 @@
   </style>
 </head>
 <body>
-<nav class="top-bar">
-  <ul>
-    <li class="name">
-      <h1>
-        <a href="#">
-          ruddl
-        </a>
-      </h1>
-    </li>
-    <li class="divider"></li>
-    <li class="tag">
+<div class="topbar">
+    <div class="name">
+      ruddl
+    </div>
+    <div class="divider"></div>
+    <div class="tag">
       reddit redefined!
-    </li>
-    <li class="subreddits">
+    </div>
+    <div class="subreddits">
       <select id="selSubreddit">
         <option value="front">front page</option>
         <option value="funny">funny</option>
@@ -73,9 +68,8 @@
         <option value="bestof">bestof</option>
         <option value="aww">aww</option>
       </select>
-    </li>
-  </ul>
-</nav>
+    </div>
+</div>
 
 <div class="row" style="margin: 15px 0px 0px 15px;">
   <dl class="sub-nav">
@@ -91,7 +85,7 @@
   <%= yield %>
 </div>
 
-<div class="row display" style="text-align: center; display: block;width: 100%;clear: both;">
+<div class="row display" style="text-align: center; display: block;width: 100%;clear: both;margin-top: 10px;">
   <div class="twelve columns centered">
     <a id="load-more" href="#/feed/front/hot/0" data-section="hot" class="large secondary button">Load More</a>
   </div>
@@ -123,7 +117,7 @@
 	<div id="{{key}}" class="box panel">
 	  <div class='description'>
 		<div class='description_content'>
-		  <a class="premalink" href="{{premalink}}" data-id="{{key}}" target="_blank">{{title}}</a>
+		  <a title="Show Top Comments" class="premalink" href="{{premalink}}" data-id="{{key}}" target="_blank">{{title}}</a>
 		</div>
         <div class='icon'>
           <img src="http://g.etfv.co/{{link}}" width="16" height="16" />

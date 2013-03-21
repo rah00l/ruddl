@@ -55,7 +55,13 @@ $(function() {
                 var key = $(this).attr('data-id');
                 var comments = $('#'+key).find('.comments');
                 var content = $('#'+key).find('.content');
-                comments.height(content.height()-20);
+                var commentHeight = content.height()-20;
+                if(commentHeight < 250) {
+                    commentHeight = 250;
+                    content.height(commentHeight+20);
+                    self.calcCols(true);
+                }
+                comments.height(commentHeight);
                 if(comments.html().length == 0) {
                     $.ajax({
                         type:'GET',

@@ -54,13 +54,6 @@
     margin-left: 5px;
 }
 
-.subreddits {
-    color: #CCCCCC;
-    padding-left: 10px;
-    padding-right: 10px;
-    float: right !important;
-}
-
 #container {
     background: #FFF;
     padding: 5px;
@@ -117,23 +110,50 @@ div.comments{
     display: block;
 }
 
-@media only screen and (max-width : 480px) {
-    p.description_content{
-        font-size: 10px;
-    }
+.topbar {
+    color: #fff;
+    background: #222;
+    height: 45px;
+    line-height: 45px;
+    margin: 0 0 30px;
+    padding: 0;
+    width: 100%;
+}
 
-    /*body::before{
-        content: "Mobile media query (0 < 767) fired";
-        font-weight: bold;
-        display: block;
-        text-align: center;
-        background: rgba(255,0,0, 0.8);
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 99;
-    }*/
+.topbar .name {
+    float: left;
+    line-height: 45px;
+    height: 45px;
+    font-size: 17px;
+    margin: 0;
+    font-weight: bold;
+    color: #fff;
+    display: block;
+    padding: 0 15px;
+}
+
+.topbar .tag {
+    float: left;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.topbar .divider {
+    float: left;
+    background: #000;
+    -webkit-box-shadow: 1px 0 0 rgba(255,255,255,0.1);
+    -moz-box-shadow: 1px 0 0 rgba(255,255,255,0.1);
+    box-shadow: 1px 0 0 rgba(255,255,255,0.1);
+    height: 100%;
+    margin-right: 1px;
+    width: 1px;
+}
+
+.topbar .subreddits {
+    color: #CCCCCC;
+    padding-left: 10px;
+    padding-right: 10px;
+    float: right !important;
 }
 
 /**** Transitions ****/
