@@ -69,6 +69,7 @@ class Ruddl
   end
 
   def parse_misc(item)
+    max_attempts = 10
     puts "parsing misc => #{item['data']['url']}"
     begin
       uri = URI(item['data']['url'])
@@ -97,6 +98,8 @@ class Ruddl
       end
     rescue => exception
       puts exception
+      attempts = attempts + 1
+      retry if(attempts < max_attempts)
     end
 
     if best_image.nil?
