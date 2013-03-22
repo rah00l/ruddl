@@ -62,6 +62,7 @@
 }
 
 .box {
+    display: none;
     margin: 5px;
     padding: 5px;
     font-size: 11px;
@@ -73,6 +74,7 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
+    overflow: auto;
 }
 
 div.description{

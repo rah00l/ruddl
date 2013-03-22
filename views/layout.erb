@@ -37,9 +37,7 @@
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
       })();
   </script>
-  <style>
-      .box {display: none;}
-  </style>
+
 </head>
 <body>
 <div class="topbar">
@@ -111,11 +109,6 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.1.0/jquery.timeago.min.js"></script>
 <script src="//js.pusher.com/1.12/pusher.min.js"></script>
 <!-- Initialize JS Plugins -->
-<script type="text/javascript">
-    Handlebars.registerHelper('date_format', function(context, block) {
-        return $.timeago(new Date(context*1000));
-    });
-</script>
 <script id="ruddl-template" type="text/x-handlebars-template">
 	<div id="{{key}}" class="box panel">
 	  <div class='description'>
@@ -129,7 +122,7 @@
       <div class="comments"></div>
       <div class="content">
         {{#if image}}
-            <a href="{{link}}" target="_blank"><img class="lazy" src="{{image}}"/></a>
+            <a href="{{link}}" target="_blank"><img class="lazy" src="{{image_url image}}"/></a>
         {{else}}
             {{{text}}}
         {{/if}}

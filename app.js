@@ -23,6 +23,7 @@ $(function() {
         var key = '<%= Pusher.key %>'
         var socketId = null;
         var pusher = null;
+        var colWidth = 0;
 
         var container = $('#container');
         var loadMoreBtn = $('#load-more');
@@ -133,7 +134,8 @@ $(function() {
                     if (data != "null") {
                         var newElems = $(template(data));
                         container.append(newElems).masonry('appended', newElems, true);
-                        container.imagesLoaded( function() {
+                        newElems.imagesLoaded( function() {
+                            newElems.show();
                             self.calcCols(true);
                         });
                     }
@@ -154,13 +156,18 @@ $(function() {
                 $('div.box').css('width', function(index) {
                     var winWidth = $(window).width()-50;
                     var cols = winWidth > 800 ? (winWidth > 1600 ? 4 : 3) : (winWidth > 600 ? 2 : 1);
-                    return Math.floor(winWidth/cols);
+                    colWidth = winWidth/cols;
+                    return Math.floor(colWidth);
                 });
-
-                $('div.box').css('display','inline');
 
                 if(reloadMasonry)
                     container.masonry('reload');
+            },
+            getColWidth : function() {
+                if (colWidth == 0) {
+                    this.calcCols(false);
+                }
+                return Math.round(colWidth);
             }
         };
 
@@ -168,6 +175,17 @@ $(function() {
     })();
 
     var feed = new ruddl();
+
+    Handlebars.registerHelper('date_format', function(context, block) {
+        return $.timeago(new Date(context*1000));
+    });
+    Handlebars.registerHelper('image_url', function(context, block) {
+        //if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
+        //    return 'http://images.weserv.nl/?url='+context.substr(context.indexOf('://')+3)+'&w='+feed.getColWidth();
+        //} else {
+            return context;
+        //}
+    });
 
     $("#selSubreddit").change(function() {
         var subreddit = $(this).find(":selected").val();
