@@ -180,11 +180,11 @@ $(function() {
         return $.timeago(new Date(context*1000));
     });
     Handlebars.registerHelper('image_url', function(context, block) {
-        //if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
-        //    return 'http://images.weserv.nl/?url='+context.substr(context.indexOf('://')+3)+'&w='+feed.getColWidth();
-        //} else {
+        if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
+            return 'http://images.weserv.nl/?url='+context.substr(context.indexOf('://')+3)+'&w='+feed.getColWidth();
+        } else {
             return context;
-        //}
+        }
     });
 
     $("#selSubreddit").change(function() {
