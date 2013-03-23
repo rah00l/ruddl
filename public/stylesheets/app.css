@@ -1,9 +1,3 @@
-.tag {
-    color: #ffffff;
-    padding-left: 10px;
-    padding-right: 10px;
-}
-
 .md {
     padding: 10px;
     word-wrap: break-word;
@@ -139,12 +133,20 @@ div.comments{
     padding: 5px;
 }
 
-.topbar .tag {
-    float: left;
-    padding-left: 10px;
-    padding-right: 10px;
-    font-weight: bold;
-    color: #CCC;
+@media (min-width:500px) {
+    .topbar .tag {
+        float: left;
+        padding-left: 10px;
+        padding-right: 10px;
+        font-weight: bold;
+        color: #CCC;
+    }
+}
+
+@media (max-width:499px) {
+    .topbar .tag {
+        display: none;
+    }
 }
 
 .topbar .divider {
