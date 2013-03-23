@@ -69,7 +69,6 @@ class Ruddl
   end
 
   def parse_misc(item)
-    max_attempts = 10
     puts "parsing misc => #{item['data']['url']}"
     begin
       uri = URI(item['data']['url'])
@@ -82,7 +81,7 @@ class Ruddl
           if not (image =~ /^http:/)
             image = URI::join(uri.scheme+'://'+uri.host, image)
           end
-          image = URI.parse(URI.encode(image.to_s, "[]")).to_s
+          image = URI.parse(URI.escape(image.to_s)).to_s
           unless (image =~ URI::regexp).nil?
             puts "getting the size of => #{image}"
             dimensions = FastImage.size(image)
@@ -98,10 +97,9 @@ class Ruddl
       end
     rescue => exception
       puts exception
-      attempts = attempts + 1
-      retry if(attempts < max_attempts)
     end
 
+    puts 'best_image'
     if best_image.nil?
       best_image = "http://pagepeeker.com/thumbs.php?size=x&url=#{URI::encode(item['data']['url'])}"
     end

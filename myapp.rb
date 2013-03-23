@@ -74,6 +74,7 @@ class MyApp < Sinatra::Base
             @@redis.expire(doc_key, 28800)
             Pusher['ruddl'].trigger("#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}", rdoc.to_json)
           end
+          Pusher['ruddl'].trigger("#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}", 'false')
         end
         status 200
     end

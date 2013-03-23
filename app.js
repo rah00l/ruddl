@@ -106,6 +106,7 @@ $(function() {
             changeSubreddit: function(subreddit) {
                 pusher.disconnect();
                 currentSubreddit = subreddit;
+                currentAfter = '0';
                 var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
                 this.loadMore(url, true);
                 return false;
@@ -130,14 +131,22 @@ $(function() {
 
                 pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
+
+                var pagetitle = $('title').text();
+                $('title').text('Loading');
                 channel.bind(currentSubreddit+'-'+currentSection+'-'+currentAfter+'-'+socketId, function(data) {
                     if (data != "null") {
-                        var newElems = $(template(data));
-                        container.append(newElems).masonry('appended', newElems, true);
-                        newElems.imagesLoaded( function() {
-                            newElems.show();
-                            self.calcCols(true);
-                        });
+                        if (data == false) {
+                            $('title').text(pagetitle);
+                        } else {
+                            $('title').text($('title').text() + '.');
+                            var newElems = $(template(data));
+                            container.append(newElems).masonry('appended', newElems, true);
+                            newElems.imagesLoaded( function() {
+                                newElems.show();
+                                self.calcCols(true);
+                            });
+                        }
                     }
                 });
 
