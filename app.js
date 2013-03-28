@@ -24,6 +24,7 @@ $(function() {
         var socketId = null;
         var pusher = null;
         var colWidth = 0;
+        var logoAnim = null;
 
         var container = $('#container');
         var loadMoreBtn = $('#load-more');
@@ -101,6 +102,7 @@ $(function() {
                 currentSection = section;
                 var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
                 this.loadMore(url, true);
+                $("html, body").animate({ scrollTop: 0 }, "slow");
                 return false;
             },
             changeSubreddit: function(subreddit) {
@@ -109,6 +111,7 @@ $(function() {
                 currentAfter = '0';
                 var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
                 this.loadMore(url, true);
+                $("html, body").animate({ scrollTop: 0 }, "slow");
                 return false;
             },
             changeAfter: function(after) {
@@ -138,8 +141,10 @@ $(function() {
                     if (data != "null") {
                         if (data == false) {
                             $('title').text(pagetitle);
+                            //self.stopLogoAnim();
                         } else {
                             $('title').text($('title').text() + '.');
+                            //self.startLogoAnim();
                             var newElems = $(template(data));
                             container.append(newElems).masonry('appended', newElems, true);
                             newElems.imagesLoaded( function() {
@@ -160,6 +165,25 @@ $(function() {
                         updateNextURL();
                     });
                 });
+            },
+            startLogoAnim : function() {
+                if(logoAnim == null) {
+                    logoAnim = function() {
+                        $(".logo").rotate({
+                            angle:0,
+                            animateTo:360,
+                            callback: logoAnim,
+                            easing: function (x,t,b,c,d){        // t: current time, b: begInnIng value, c: change In value, d: duration
+                                return c*(t/d)+b;
+                            }
+                        });
+                    }
+                    logoAnim();
+                }
+            },
+            stopLogoAnim : function() {
+                $(".logo").stopRotate();
+                logoAnim = null;
             },
             calcCols : function (reloadMasonry) {
                 $('div.box').css('width', function(index) {
