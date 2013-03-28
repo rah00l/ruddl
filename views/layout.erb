@@ -10,7 +10,7 @@
 
   <!-- Set the viewport width to device width for mobile -->
   <meta name="viewport" content="width=device-width" />
-  <meta name="apple-mobile-web-app-title" content="CG Iron Fitting">
+  <meta name="apple-mobile-web-app-title" content="ruddl">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -53,11 +53,17 @@
 <body>
 <div class="topbar">
     <div class="name">
-      <img src="/images/logo.png">
+      <img class="web" width="45px" src="/images/logo_mobile.png">
+      <img class="mobile" width="125px" src="/images/logo.png">
     </div>
     <div class="divider"></div>
     <div class="tag">
-      reddit redefined!
+      <dl class="sub-nav">
+        <dd class="active"><a data-section="hot" href="#">hot</a></dd>
+        <dd><a data-section="new" href="#">new</a></dd>
+        <dd><a data-section="controversial" href="#">controversial</a></dd>
+        <dd><a data-section="top" href="#">top</a></dd>
+      </dl>
     </div>
     <div class="subreddits">
       <select id="selSubreddit">
@@ -81,16 +87,6 @@
         <option value="todayilearned">TIL</option>
       </select>
     </div>
-</div>
-
-<div class="row" style="margin: 15px 0px 0px 15px;">
-  <dl class="sub-nav">
-    <dt>Filter:</dt>
-    <dd class="active"><a data-section="hot" href="#">hot</a></dd>
-    <dd><a data-section="new" href="#">new</a></dd>
-    <dd><a data-section="controversial" href="#">controversial</a></dd>
-    <dd><a data-section="top" href="#">top</a></dd>
-  </dl>
 </div>
 
 <div id="container">

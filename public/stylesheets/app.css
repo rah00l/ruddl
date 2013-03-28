@@ -1,3 +1,15 @@
+a {
+    color: #0E81C2;
+}
+
+a:hover {
+    color: #0E81C2;
+}
+
+dl.sub-nav dd.active a {
+    background: #0E81C2;
+}
+
 .md {
     padding: 10px;
     word-wrap: break-word;
@@ -49,10 +61,13 @@
 }
 
 #container {
+    position: inherit;
     background: #FFF;
     padding: 5px;
+    margin-top: 70px;
     margin-bottom: 20px;
     clear: both;
+    overflow: inherit;
 }
 
 .box {
@@ -107,13 +122,16 @@ div.comments{
 }
 
 .topbar {
+    position: fixed;
+    top: 0;
     color: #fff;
     background: #222;
     height: 45px;
     line-height: 45px;
-    margin: 0 0 30px;
     padding: 0;
     width: 100%;
+    z-index: 1;
+    border-bottom: 3px solid #0E81C2;
 }
 
 .topbar .name {
@@ -129,22 +147,33 @@ div.comments{
 }
 
 .topbar .name img {
-    width: 125px;
     padding: 5px;
 }
 
+.topbar .tag {
+    float: left;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-weight: bold;
+    color: #CCC;
+}
+
 @media (min-width:500px) {
-    .topbar .tag {
-        float: left;
-        padding-left: 10px;
-        padding-right: 10px;
-        font-weight: bold;
-        color: #CCC;
+    .topbar > .name > img.web {
+        display: none;
+    }
+
+    .topbar > .name > img.mobile {
+        display: inline;
     }
 }
 
 @media (max-width:499px) {
-    .topbar .tag {
+    .topbar > .name > img.web {
+        display: inline;
+    }
+
+    .topbar > .name > img.mobile {
         display: none;
     }
 }
