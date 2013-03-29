@@ -128,7 +128,7 @@ $(function() {
                 $.pnotify_remove_all();
                 clearInterval(updateInterval);
                 var notice = $.pnotify({
-                    text: refresh ? 'Refreshing...' : 'Loading...',
+                    text: refresh ? 'Checking for updates...' : 'Loading...',
                     hide: false,
                     closer: false,
                     sticker: false,
@@ -164,7 +164,7 @@ $(function() {
                     if (data != "null") {
                         if (data == false) {
                             isLoading = false;
-                            var options = {text: 'Done. Next update in 30 secs...', hide: true};
+                            var options = {hide: true};
                             updateInterval = setInterval(function(){
                                 self.checkUpdates()
                             }, 30000);
