@@ -24,7 +24,9 @@ $(function() {
         var socketId = null;
         var pusher = null;
         var colWidth = 0;
-        var logoAnim = null;
+        var updateInterval = null;
+        var isLoading = false;
+        var currentURL = null;
 
         var container = $('#container');
         var loadMoreBtn = $('#load-more');
@@ -50,7 +52,7 @@ $(function() {
                     itemSelector : '.box',
                     isAnimated: false
                 });
-                self.loadMore(loadMoreBtn.attr('href').replace('#',''), loadMoreBtn.attr('data-section'), false);
+                self.loadMore(loadMoreBtn.attr('href').replace('#',''), loadMoreBtn.attr('data-section'), false, false);
             });
 
             $('.premalink').live('click', function() {
@@ -98,31 +100,51 @@ $(function() {
         ruddl.prototype = {
             constructor: ruddl,
             changeSection: function(section) {
-                pusher.disconnect();
                 currentSection = section;
                 var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
-                this.loadMore(url, true);
+                this.loadMore(url, true, false);
                 $("html, body").animate({ scrollTop: 0 }, "slow");
                 return false;
             },
             changeSubreddit: function(subreddit) {
-                pusher.disconnect();
                 currentSubreddit = subreddit;
                 currentAfter = '0';
                 var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
-                this.loadMore(url, true);
+                this.loadMore(url, true, false);
                 $("html, body").animate({ scrollTop: 0 }, "slow");
                 return false;
             },
             changeAfter: function(after) {
-                pusher.disconnect();
                 currentAfter = after;
                 var url = '/feed/' + currentSubreddit + '/' + currentSection + '/' + currentAfter;
-                this.loadMore(url, false);
+                this.loadMore(url, false, false);
                 return false;
             },
-            loadMore : function(url, reset) {
+            loadMore : function(url, reset, prepend) {
                 var self = this;
+                var count = 0;
+                var refresh = (url == currentURL) ? true : false;
+                var stack_bottomright = {"dir1": "up", "dir2": "left", "firstpos1": 25, "firstpos2": 25};
+                $.pnotify_remove_all();
+                clearInterval(updateInterval);
+                var notice = $.pnotify({
+                    text: refresh ? 'Refreshing...' : 'Loading...',
+                    hide: false,
+                    closer: false,
+                    sticker: false,
+                    shadow: false,
+                    addclass: 'stack-bottomright custom',
+                    stack: stack_bottomright,
+                    opacity: .8,
+                    nonblock: true,
+                    nonblock_opacity: .2,
+                    delay: 3000,
+                    history: false,
+                    animate_speed: 'fast',
+                    width: '150px'
+                });
+
+                currentURL = url;
                 url =  url + '/' + socketId;
 
                 if(reset) {
@@ -132,26 +154,40 @@ $(function() {
                 loadMoreBtn.html('Loading...');
                 loadMoreBtn.css('pointer-events', 'none');
 
+                if (pusher)
+                    pusher.disconnect();
+
                 pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
 
-                var pagetitle = $('title').text();
-                $('title').text('Loading');
                 channel.bind(currentSubreddit+'-'+currentSection+'-'+currentAfter+'-'+socketId, function(data) {
                     if (data != "null") {
                         if (data == false) {
-                            $('title').text(pagetitle);
-                            //self.stopLogoAnim();
+                            isLoading = false;
+                            var options = {text: 'Done. Next update in 30 secs...', hide: true};
+                            updateInterval = setInterval(function(){
+                                self.checkUpdates()
+                            }, 30000);
                         } else {
-                            $('title').text($('title').text() + '.');
-                            //self.startLogoAnim();
-                            var newElems = $(template(data));
-                            container.append(newElems).masonry('appended', newElems, true);
-                            newElems.imagesLoaded( function() {
-                                newElems.show();
-                                self.calcCols(true);
-                            });
+                            isLoading = true;
+                            if($('#'+data['key']).length == 0) {
+                                count++;
+                                var options = {hide: false, text: refresh ? 'Adding '+count+' new items...' : Math.floor((count/25)*100) + "% complete."};
+                                var newElems = $(template(data));
+                                if(prepend) {
+                                    container.prepend(newElems).masonry();
+                                } else {
+                                    container.append(newElems).masonry('appended', newElems, true);
+                                }
+                                newElems.imagesLoaded( function() {
+                                    newElems.show();
+                                    self.calcCols(true);
+                                });
+                            } else {
+                                var options = {hide: true};
+                            }
                         }
+                        notice.pnotify(options);
                     }
                 });
 
@@ -166,24 +202,10 @@ $(function() {
                     });
                 });
             },
-            startLogoAnim : function() {
-                if(logoAnim == null) {
-                    logoAnim = function() {
-                        $(".logo").rotate({
-                            angle:0,
-                            animateTo:360,
-                            callback: logoAnim,
-                            easing: function (x,t,b,c,d){        // t: current time, b: begInnIng value, c: change In value, d: duration
-                                return c*(t/d)+b;
-                            }
-                        });
-                    }
-                    logoAnim();
+            checkUpdates : function() {
+                if(!isLoading) {
+                    this.loadMore(currentURL, false, true);
                 }
-            },
-            stopLogoAnim : function() {
-                $(".logo").stopRotate();
-                logoAnim = null;
             },
             calcCols : function (reloadMasonry) {
                 $('div.box').css('width', function(index) {
