@@ -226,8 +226,8 @@ $(function() {
     });
 
     $('.sub-nav dd').click(function() {
-        $('.sub-nav dd').attr('class','');
-        $(this).attr('class','active');
+        $('.sub-nav dd').removeClass('active');
+        $(this).addClass('active');
         var setion = $(this).find('a').attr('data-section');
         feed.changeSection(setion);
     });
