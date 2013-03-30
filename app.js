@@ -167,7 +167,7 @@ $(function() {
                             var options = {hide: true};
                             updateInterval = setInterval(function(){
                                 self.checkUpdates()
-                            }, 30000);
+                            }, 60000);
                         } else {
                             isLoading = true;
                             if($('#'+data['key']).length == 0) {
