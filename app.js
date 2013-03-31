@@ -161,44 +161,41 @@ $(function() {
                 var channel = pusher.subscribe('ruddl');
 
                 channel.bind(currentSubreddit+'-'+currentSection+'-'+currentAfter+'-'+socketId, function(data) {
-                    if (data != "null") {
-                        if (data == false) {
-                            isLoading = false;
-                            var options = {hide: true};
-                            updateInterval = setInterval(function(){
-                                self.checkUpdates()
-                            }, 60000);
-                        } else {
-                            isLoading = true;
-                            if($('#'+data['key']).length == 0) {
-                                count++;
-                                var options = {hide: false, text: refresh ? 'Adding '+count+' new items...' : Math.floor((count/25)*100) + "% complete."};
-                                var newElems = $(template(data));
-                                if(prepend) {
-                                    container.prepend(newElems).masonry();
-                                } else {
-                                    container.append(newElems).masonry('appended', newElems, true);
-                                }
-                                newElems.imagesLoaded( function() {
-                                    newElems.show();
-                                    self.calcCols(true);
-                                });
+                    if (data == false) {
+                        isLoading = false;
+                        var options = {hide: true};
+                        updateInterval = setInterval(function(){
+                            self.checkUpdates()
+                        }, 60000);
+                        loadMoreBtn.html('Load More');
+                        loadMoreBtn.css('pointer-events', 'auto');
+                        updateNextURL();
+                    } else if (data != null && data.hasOwnProperty('key')) {
+                        isLoading = true;
+                        if($('#'+data['key']).length == 0) {
+                            count++;
+                            var options = {hide: false, text: refresh ? 'Adding '+count+' new items...' : Math.floor((count/25)*100) + "% complete."};
+                            var newElems = $(template(data));
+                            if(prepend) {
+                                container.prepend(newElems).masonry();
                             } else {
-                                var options = {hide: true};
+                                container.append(newElems).masonry('appended', newElems, true);
                             }
+                            newElems.imagesLoaded( function() {
+                                newElems.show();
+                                self.calcCols(true);
+                            });
+                        } else {
+                            var options = {hide: true};
                         }
-                        notice.pnotify(options);
                     }
+                    notice.pnotify(options);
                 });
 
                 channel.bind('pusher:subscription_succeeded', function() {
                     $.ajax({
                         type: 'get',
                         url: url
-                    }).complete(function() {
-                        loadMoreBtn.html('Load More');
-                        loadMoreBtn.css('pointer-events', 'auto');
-                        updateNextURL();
                     });
                 });
             },

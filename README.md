@@ -1,9 +1,1 @@
-Let's ruddl!
-
-This site is not owned, operated, sponsored, endorsed, or affiliated by Reddit in any way.
-All content shown is provided by Reddit API. ruddl is merely a new interface to browse Reddit.
-
-TODO:
-- Use image proxy (https://github.com/eahanson/imageproxy)
-- Ability to login and up/down vote
-- Inline video/gallery/zoom controls
+ruddl will make your reddit browsing experience more enjoyable. It will show you all the images or content from the post and their top comments right on the page. You can also browse other popular subreddits. It is also mobile friendly so you can get your reddit fix when you are on the go.
