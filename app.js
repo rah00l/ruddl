@@ -154,8 +154,7 @@ $(function() {
                 loadMoreBtn.html('Loading...');
                 loadMoreBtn.css('pointer-events', 'none');
 
-                if (pusher)
-                    pusher.disconnect();
+                self.closeConnection();
 
                 pusher = new Pusher(key);
                 var channel = pusher.subscribe('ruddl');
@@ -220,6 +219,9 @@ $(function() {
                     this.calcCols(false);
                 }
                 return Math.round(colWidth);
+            },
+            closeConnection : function() {
+                pusher
             }
         };
 
@@ -260,5 +262,9 @@ $(function() {
 
     $(window).resize(function() {
         feed.calcCols(true);
+    });
+
+    $(window).unload(function() {
+        feed.closeConnection();
     });
 });
