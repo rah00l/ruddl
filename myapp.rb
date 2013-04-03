@@ -26,7 +26,8 @@ class MyApp < Sinatra::Base
   set :sockets, []
 
   get '/' do
-    erb :index
+    #erb :index
+    erb :test
   end
 
   get '/app.js' do
@@ -34,6 +35,13 @@ class MyApp < Sinatra::Base
       "Content-Type" => "text/javascript"
 
     ERB.new(File.read('app.js')).result
+  end
+
+  get '/test.js' do
+    headers \
+      "Content-Type" => "text/javascript"
+
+    ERB.new(File.read('test.js')).result
   end
 
   get '/feed/*/*/:after/:socket_id', '/feed/*/*/:socket_id' do
