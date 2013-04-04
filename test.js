@@ -126,6 +126,9 @@
         },
         getStories: function() {
             var self = this;
+            var count = 0;
+            var total = 0;
+            $.pnotify_remove_all();
             self.unsubAllChannels();
             var notice = $.pnotify({
                 text: self.appModel.get('isRefresh') ? 'Checking for updates...' : 'Loading...',
@@ -158,13 +161,14 @@
                     self.collection.add(storyView.model);
                     self.container.append(newElems).masonry('appended', newElems, true);
                     newElems.imagesLoaded( function() {
+                        count++;
                         newElems.show();
                         self.calcCols(true);
+                        notice.pnotify({hide: false, text: self.appModel.get('isRefresh') ? 'Adding '+count+' new items...' : Math.floor((count/total)*100) + "% complete."});
                     });
                 }
             });
             channel.bind('notification', function(data) {
-                //TODO: Add notification plugin
                 if(data == -1) {
                     notice.pnotify({hide: true});
                     self.pusher.unsubscribe(self.appModel.get('currentChannel'));
@@ -172,6 +176,7 @@
                     self.loadMoreBtn.html('Load More');
                     self.loadMoreBtn.css('pointer-events', 'auto');
                 } else {
+                    total = data;
                     self.loadMoreBtn.html('Loading...');
                     self.loadMoreBtn.css('pointer-events', 'none');
                 }
