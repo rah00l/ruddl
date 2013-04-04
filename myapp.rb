@@ -36,12 +36,11 @@ class MyApp < Sinatra::Base
     ERB.new(File.read('app.js')).result
   end
 
-  get '/feed/*/*/:after/:socket_id', '/feed/*/*/:socket_id' do
+  get '/feed/*/*/:after/:socket_id' do
     @subreddit = params[:splat][0]
     @section = params[:splat][1]
     @section.empty? ? @section = 'hot' : @section
     @after = params[:after];
-    @after.empty? ? @after = '0' : params[:after]
     if (['hot', 'new', 'controversial', 'top'].include?(@section))
         if @subreddit == 'front'
           url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
@@ -61,6 +60,7 @@ class MyApp < Sinatra::Base
 
         if @feed['data']['children']
           ruddl = Ruddl.new
+          Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('notification', @feed['data']['children'].length)
           @feed['data']['children'].each_with_index do |item, index|
             doc_key = item['data']['name']
             puts "#{index} => #{doc_key}"
@@ -72,9 +72,9 @@ class MyApp < Sinatra::Base
             end
             @@redis.set(doc_key, Marshal.dump(rdoc))
             @@redis.expire(doc_key, 28800)
-            Pusher['ruddl'].trigger("#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}", rdoc.to_json)
+            Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('story', rdoc.to_json)
           end
-          Pusher['ruddl'].trigger("#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}", 'false')
+          Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('notification', '-1')
         end
         status 200
     end
