@@ -51,7 +51,7 @@
             'click #load-more': 'loadMore'
         },
         initialize: function() {
-            _.bindAll(this, 'changeSubreddit', 'changeSection', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'loadMore');
+            _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadMore', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
             this.appModel = new App.Models.Main();
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
@@ -73,7 +73,9 @@
             this.container.empty();
             this.appModel.set({currentSubreddit: subreddit});
             this.appModel.set({currentAfter: '0'});
+            this.appModel.set({isRefresh: false});
             this.getStories();
+            $("html, body").animate({ scrollTop: 0 }, "slow");
             return false;
         },
         changeSection: function(e) {
@@ -84,6 +86,13 @@
             this.container.empty();
             this.appModel.set({currentSection: section});
             this.appModel.set({currentAfter: '0'});
+            this.appModel.set({isRefresh: false});
+            this.getStories();
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+            return false;
+        },
+        loadMore: function(e) {
+            this.appModel.set({isRefresh: true});
             this.getStories();
             return false;
         },
@@ -95,10 +104,6 @@
             $.each(objectKeys, function(index, value) {
                 self.pusher.unsubscribe(value);
             });
-        },
-        loadMore: function(e) {
-            this.getStories();
-            return false;
         },
         calcCols: function(reloadMasonry) {
             var self = this;

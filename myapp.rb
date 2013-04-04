@@ -26,8 +26,7 @@ class MyApp < Sinatra::Base
   set :sockets, []
 
   get '/' do
-    #erb :index
-    erb :test
+    erb :index
   end
 
   get '/app.js' do
