@@ -50,45 +50,64 @@
             'click #load-more': 'loadMore'
         },
         initialize: function() {
-            _.bindAll(this, 'changeSubreddit', 'changeSection', 'calcCols', 'initPusher', 'resize', 'loadMore');
+            _.bindAll(this, 'changeSubreddit', 'changeSection', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'loadMore');
             this.appModel = new App.Models.Main();
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
             this.storyTemplate = Handlebars.compile($("#ruddl-story-template").html());
             this.commentTemplate = Handlebars.compile($("#ruddl-comment-template").html());
+            this.collection = new App.Collections.Stories();
 
             $(window).on('resize', this.resize);
 
             this.pusher = new Pusher(this.appModel.get('key'));
             this.pusher.connection.bind('connected', this.initPusher);
+            /*Pusher.log = function(message) {
+                if (window.console && window.console.log) window.console.log(message);
+            };*/
         },
         changeSubreddit: function(e) {
-            this.pusher.unsubscribe(this.appModel.get('currentChannel'));
+            this.collection.reset();
             var subreddit = $(e.target).find(":selected").val();
             this.container.empty();
             this.appModel.set({currentSubreddit: subreddit});
+            this.appModel.set({currentAfter: '0'});
             this.getStories();
+            return false;
         },
         changeSection: function(e) {
-            this.pusher.unsubscribe(this.appModel.get('currentChannel'));
+            this.collection.reset();
             var section = $(e.currentTarget).find('a').attr('data-section');
             $(e.currentTarget.parentElement.children).removeClass('active');
             $(e.currentTarget).addClass('active');
             this.container.empty();
             this.appModel.set({currentSection: section});
+            this.appModel.set({currentAfter: '0'});
             this.getStories();
+            return false;
+        },
+        unsubAllChannels: function() {
+            var self = this;
+            var objectKeys = $.map(this.pusher.channels.channels, function(value, key) {
+                return key;
+            });
+            $.each(objectKeys, function(index, value) {
+                self.pusher.unsubscribe(value);
+            });
         },
         loadMore: function(e) {
-            //TODO: Update currentAfter
+            this.pusher.unsubscribe(this.appModel.get('currentChannel'));
+            this.appModel.set({currentAfter: this.collection.last().get('key')});
             this.getStories();
+            return false;
         },
         calcCols: function(reloadMasonry) {
             var self = this;
             $('div.box').css('width', function(index) {
                 var winWidth = $(window).width()-50;
                 var cols = winWidth > 800 ? (winWidth > 1600 ? 4 : 3) : (winWidth > 600 ? 2 : 1);
-                self.appModel.set({colWidth: winWidth/cols});
-                return Math.floor(self.appModel.get('colWidth'));
+                self.appModel.set({colWidth: Math.floor(winWidth/cols)});
+                return self.appModel.get('colWidth');
             });
 
             if(reloadMasonry)
@@ -108,6 +127,7 @@
         },
         getStories: function() {
             var self = this;
+            self.unsubAllChannels();
             var channel = this.pusher.subscribe(this.appModel.get('currentChannel'));
             channel.bind('pusher:subscription_succeeded', function() {
                 $.ajax({
@@ -119,7 +139,8 @@
                 if(data != null) {
                     var storyView = new App.Views.Story({model: data, parent: self});
                     var newElems = $(storyView.render().el);
-                    self.container.append(newElems).masonry('appended', newElems, true);;
+                    self.collection.add(storyView.model);
+                    self.container.append(newElems).masonry('appended', newElems, true);
                     newElems.imagesLoaded( function() {
                         newElems.show();
                         self.calcCols(true);
@@ -128,12 +149,14 @@
             });
             channel.bind('notification', function(data) {
                 //TODO: Add notification plugin
-                if(data > -1) {
-                    self.loadMoreBtn.html('Loading...');
-                    self.loadMoreBtn.css('pointer-events', 'none');
-                } else {
+                if(data == -1) {
+                    self.pusher.unsubscribe(self.appModel.get('currentChannel'));
+                    self.appModel.set({currentAfter: self.collection.last().get('key')});
                     self.loadMoreBtn.html('Load More');
                     self.loadMoreBtn.css('pointer-events', 'auto');
+                } else {
+                    self.loadMoreBtn.html('Loading...');
+                    self.loadMoreBtn.css('pointer-events', 'none');
                 }
             });
         }
