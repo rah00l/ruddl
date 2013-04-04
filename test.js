@@ -13,6 +13,7 @@
             colWidth: 0,
             updateInterval: null,
             isLoading: false,
+            isRefresh: false,
             currentURL: null,
             currentChannel: null,
             currentSection: 'hot',
@@ -96,8 +97,6 @@
             });
         },
         loadMore: function(e) {
-            this.pusher.unsubscribe(this.appModel.get('currentChannel'));
-            this.appModel.set({currentAfter: this.collection.last().get('key')});
             this.getStories();
             return false;
         },
@@ -128,6 +127,23 @@
         getStories: function() {
             var self = this;
             self.unsubAllChannels();
+            var notice = $.pnotify({
+                text: self.appModel.get('isRefresh') ? 'Checking for updates...' : 'Loading...',
+                hide: false,
+                closer: false,
+                sticker: false,
+                shadow: false,
+                addclass: 'stack-bottomright custom',
+                stack: {"dir1": "up", "dir2": "left", "firstpos1": 25, "firstpos2": 25},
+                opacity: .8,
+                nonblock: true,
+                nonblock_opacity: .2,
+                delay: 3000,
+                history: false,
+                animate_speed: 'fast',
+                width: '150px'
+            });
+
             var channel = this.pusher.subscribe(this.appModel.get('currentChannel'));
             channel.bind('pusher:subscription_succeeded', function() {
                 $.ajax({
@@ -150,6 +166,7 @@
             channel.bind('notification', function(data) {
                 //TODO: Add notification plugin
                 if(data == -1) {
+                    notice.pnotify({hide: true});
                     self.pusher.unsubscribe(self.appModel.get('currentChannel'));
                     self.appModel.set({currentAfter: self.collection.last().get('key')});
                     self.loadMoreBtn.html('Load More');
