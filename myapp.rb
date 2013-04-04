@@ -36,12 +36,11 @@ class MyApp < Sinatra::Base
     ERB.new(File.read('app.js')).result
   end
 
-  get '/feed/*/*/:after/:socket_id', '/feed/*/*/:socket_id' do
+  get '/feed/*/*/:after/:socket_id' do
     @subreddit = params[:splat][0]
     @section = params[:splat][1]
     @section.empty? ? @section = 'hot' : @section
     @after = params[:after];
-    @after.empty? ? @after = '0' : params[:after]
     if (['hot', 'new', 'controversial', 'top'].include?(@section))
         if @subreddit == 'front'
           url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"

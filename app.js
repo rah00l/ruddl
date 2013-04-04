@@ -33,8 +33,11 @@
             this.on('change:currentAfter', function(e) {
                 this.updateCurrentState();
             });
-            this.on('change:isLoading', function(e) {
-
+            this.on('change:isRefresh', function(e) {
+                console.log('setting after to 0');
+                if(this.get('isRefresh')) {
+                    this.set({currentAfter:'0'});
+                }
             });
         },
         updateCurrentState: function() {
@@ -51,7 +54,7 @@
             'click #load-more': 'loadMore'
         },
         initialize: function() {
-            _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadMore', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
+            _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadMore', 'checkUpdates', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
             this.appModel = new App.Models.Main();
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
@@ -71,9 +74,7 @@
             this.collection.reset();
             var subreddit = $(e.target).find(":selected").val();
             this.container.empty();
-            this.appModel.set({currentSubreddit: subreddit});
-            this.appModel.set({currentAfter: '0'});
-            this.appModel.set({isRefresh: false});
+            this.appModel.set({currentSubreddit: subreddit, currentAfter: '0', isRefresh: false});
             this.getStories();
             $("html, body").animate({ scrollTop: 0 }, "slow");
             return false;
@@ -84,17 +85,22 @@
             $(e.currentTarget.parentElement.children).removeClass('active');
             $(e.currentTarget).addClass('active');
             this.container.empty();
-            this.appModel.set({currentSection: section});
-            this.appModel.set({currentAfter: '0'});
-            this.appModel.set({isRefresh: false});
+            this.appModel.set({currentSection: section, currentAfter: '0', isRefresh: false});
             this.getStories();
             $("html, body").animate({ scrollTop: 0 }, "slow");
             return false;
         },
         loadMore: function(e) {
-            this.appModel.set({isRefresh: true});
+            this.appModel.set({isRefresh: false});
             this.getStories();
             return false;
+        },
+        checkUpdates: function(e) {
+            if(!this.appModel.get('isLoading')) {
+                this.appModel.set({isRefresh: true});
+                this.appModel.trigger('change:isRefresh')
+                this.getStories();
+            }
         },
         unsubAllChannels: function() {
             var self = this;
@@ -133,10 +139,12 @@
             var self = this;
             var count = 0;
             var total = 0;
+            var refresh = self.appModel.get('isRefresh');
+            clearInterval(self.appModel.get('updateInterval'));
             $.pnotify_remove_all();
             self.unsubAllChannels();
             var notice = $.pnotify({
-                text: self.appModel.get('isRefresh') ? 'Checking for updates...' : 'Loading...',
+                text: refresh ? 'Checking for updates...' : 'Loading...',
                 hide: false,
                 closer: false,
                 sticker: false,
@@ -161,27 +169,42 @@
             });
             channel.bind('story', function(data) {
                 if(data != null) {
-                    var storyView = new App.Views.Story({model: data, parent: self});
-                    var newElems = $(storyView.render().el);
-                    self.collection.add(storyView.model);
-                    self.container.append(newElems).masonry('appended', newElems, true);
-                    newElems.imagesLoaded( function() {
+                    var storyModel = new App.Models.Story(data);
+                    var exists = self.collection.get(storyModel.id);
+                    if(!exists) {
+                        var storyView = new App.Views.Story({model: storyModel, parent: self});
+                        var newElems = $(storyView.render().el);
+                        self.collection.add(storyView.model);
+                        if(refresh) {
+                            self.container.prepend(newElems).masonry();
+                        } else {
+                            self.container.append(newElems).masonry('appended', newElems, true);
+                        }
+                        newElems.imagesLoaded(function() {
+                            newElems.show();
+                            self.calcCols(true);
+                        });
                         count++;
-                        newElems.show();
-                        self.calcCols(true);
-                        notice.pnotify({hide: false, text: self.appModel.get('isRefresh') ? 'Adding '+count+' new items...' : Math.floor((count/total)*100) + "% complete."});
-                    });
+                        notice.pnotify({hide: false, text: refresh ? 'Adding '+count+' new items...' : Math.floor((count/total)*100) + "% complete."});
+                    }
                 }
             });
             channel.bind('notification', function(data) {
                 if(data == -1) {
                     notice.pnotify({hide: true});
                     self.pusher.unsubscribe(self.appModel.get('currentChannel'));
-                    self.appModel.set({currentAfter: self.collection.last().get('key')});
+                    self.appModel.set({
+                        isLoading: false,
+                        currentAfter: self.collection.last().get('key'),
+                        updateInterval: setInterval(function(){
+                            self.checkUpdates();
+                        }, 60000)
+                    });
                     self.loadMoreBtn.html('Load More');
                     self.loadMoreBtn.css('pointer-events', 'auto');
                 } else {
                     total = data;
+                    self.appModel.set({isLoading: true});
                     self.loadMoreBtn.html('Loading...');
                     self.loadMoreBtn.css('pointer-events', 'none');
                 }
@@ -190,7 +213,7 @@
     });
 
     App.Models.Story = Backbone.Model.extend({
-
+        idAttribute: "key"
     });
 
     App.Collections.Stories = Backbone.Collection.extend({
@@ -206,12 +229,12 @@
             this.parent = options.parent;
         },
         render: function() {
-            this.setElement(this.parent.storyTemplate(this.model));
+            this.setElement(this.parent.storyTemplate(this.model.attributes));
             return this;
         },
         showComments: function(e) {
             var self = this;
-            var key = this.model.key;
+            var key = this.model.id;
             var comments = $('#'+key).find('.comments');
             var content = $('#'+key).find('.content');
             var commentHeight = content.height()-20;
