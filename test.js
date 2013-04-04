@@ -54,6 +54,8 @@
             this.appModel = new App.Models.Main();
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
+            this.storyTemplate = Handlebars.compile($("#ruddl-story-template").html());
+            this.commentTemplate = Handlebars.compile($("#ruddl-comment-template").html());
 
             $(window).on('resize', this.resize);
 
@@ -152,11 +154,9 @@
         initialize: function(options) {
             _.bindAll(this, 'render');
             this.parent = options.parent;
-            this.template = Handlebars.compile($("#ruddl-template").html());
-            this.commentTemplate = Handlebars.compile($("#ruddl-comment-template").html());
         },
         render: function() {
-            this.setElement(this.template(this.model));
+            this.setElement(this.parent.storyTemplate(this.model));
             return this;
         },
         showComments: function(e) {
@@ -177,7 +177,7 @@
                     url: '/comments/'+key.split('_')[1],
                     success:function (data) {
                         $.each(data, function(index, item){
-                            var newComment = $(self.commentTemplate(item));
+                            var newComment = $(self.parent.commentTemplate(item));
                             comments.append(newComment);
                         });
                         comments.slideToggle();
