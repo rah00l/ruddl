@@ -36,13 +36,6 @@ class MyApp < Sinatra::Base
     ERB.new(File.read('app.js')).result
   end
 
-  get '/test.js' do
-    headers \
-      "Content-Type" => "text/javascript"
-
-    ERB.new(File.read('test.js')).result
-  end
-
   get '/feed/*/*/:after/:socket_id', '/feed/*/*/:socket_id' do
     @subreddit = params[:splat][0]
     @section = params[:splat][1]
