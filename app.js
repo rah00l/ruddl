@@ -34,7 +34,6 @@
                 this.updateCurrentState();
             });
             this.on('change:isRefresh', function(e) {
-                console.log('setting after to 0');
                 if(this.get('isRefresh')) {
                     this.set({currentAfter:'0'});
                 }
