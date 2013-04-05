@@ -34,7 +34,6 @@
                 this.updateCurrentState();
             });
             this.on('change:isRefresh', function(e) {
-                console.log('setting after to 0');
                 if(this.get('isRefresh')) {
                     this.set({currentAfter:'0'});
                 }
@@ -54,13 +53,30 @@
             'click #load-more': 'loadMore'
         },
         initialize: function() {
-            _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadMore', 'checkUpdates', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
+            _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadNew', 'loadMore', 'checkUpdates', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
+            var self = this;
             this.appModel = new App.Models.Main();
+            this.collection = new App.Collections.Stories();
+
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
+
+            this.listenTo(this.appModel, 'change:socketId', this.loadNew);
+            this.listenTo(this.appModel, 'change:currentSection', this.loadNew);
+            this.listenTo(this.appModel, 'change:currentSubreddit', this.loadNew);
+
+            Handlebars.registerHelper('date_format', function(context, block) {
+                return $.timeago(new Date(context*1000));
+            });
+            Handlebars.registerHelper('image_url', function(context, block) {
+                if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
+                    return 'http://images.weserv.nl/?url='+encodeURIComponent(context.substr(context.indexOf('://')+3))+'&w='+self.appModel.get('colWidth');
+                } else {
+                    return context;
+                }
+            });
             this.storyTemplate = Handlebars.compile($("#ruddl-story-template").html());
             this.commentTemplate = Handlebars.compile($("#ruddl-comment-template").html());
-            this.collection = new App.Collections.Stories();
 
             $(window).on('resize', this.resize);
 
@@ -71,24 +87,25 @@
             };*/
         },
         changeSubreddit: function(e) {
-            this.collection.reset();
             var subreddit = $(e.target).find(":selected").val();
-            this.container.empty();
             this.appModel.set({currentSubreddit: subreddit, currentAfter: '0', isRefresh: false});
-            this.getStories();
             $("html, body").animate({ scrollTop: 0 }, "slow");
+            $(e.target).blur();
             return false;
         },
         changeSection: function(e) {
-            this.collection.reset();
             var section = $(e.currentTarget).find('a').attr('data-section');
             $(e.currentTarget.parentElement.children).removeClass('active');
             $(e.currentTarget).addClass('active');
-            this.container.empty();
             this.appModel.set({currentSection: section, currentAfter: '0', isRefresh: false});
-            this.getStories();
             $("html, body").animate({ scrollTop: 0 }, "slow");
             return false;
+        },
+        loadNew: function(e) {
+            //appRouter.navigate(this.appModel.get('currentURL'))
+            this.collection.reset();
+            this.container.empty();
+            this.getStories();
         },
         loadMore: function(e) {
             this.appModel.set({isRefresh: false});
@@ -130,7 +147,6 @@
                 itemSelector : '.box',
                 isAnimated: false
             });
-            this.getStories();
         },
         resize: function(e) {
             this.calcCols(true);
@@ -225,7 +241,7 @@
             'click .premalink': 'showComments'
         },
         initialize: function(options) {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'showComments');
             this.parent = options.parent;
         },
         render: function() {
@@ -264,19 +280,25 @@
             return false;
         }
     });
+
+    App.Router.Main = Backbone.Router.extend({
+        routes: {
+            "": "defaultRoute",
+            "feed/:subreddit/:section/:after/:socketId": "getStories"
+        },
+        initialize: function(options) {
+            _.bindAll(this, 'defaultRoute','getStories');
+            this.app = new App.Views.Main();
+        },
+        defaultRoute: function() {},
+        getStories: function(subreddit, section, after) {
+            //this.app.appModel.set({currentSubreddit:subreddit, currentSection:section, currentAfter:after});
+        }
+    });
 })(jQuery);
 
 
 $(function() {
-    var ruddl = new App.Views.Main();
-    Handlebars.registerHelper('date_format', function(context, block) {
-        return $.timeago(new Date(context*1000));
-    });
-    Handlebars.registerHelper('image_url', function(context, block) {
-        if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
-            return 'http://images.weserv.nl/?url='+encodeURIComponent(context.substr(context.indexOf('://')+3))+'&w='+ruddl.appModel.get('colWidth');
-        } else {
-            return context;
-        }
-    });
+    window.appRouter = new App.Router.Main();
+    Backbone.history.start();
 });
