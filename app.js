@@ -77,6 +77,7 @@
             this.appModel.set({currentSubreddit: subreddit, currentAfter: '0', isRefresh: false});
             this.getStories();
             $("html, body").animate({ scrollTop: 0 }, "slow");
+            $(e.target).blur();
             return false;
         },
         changeSection: function(e) {
