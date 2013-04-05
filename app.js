@@ -54,12 +54,25 @@
         },
         initialize: function() {
             _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadMore', 'checkUpdates', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
+            var self = this;
             this.appModel = new App.Models.Main();
+            this.collection = new App.Collections.Stories();
+
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
+
+            Handlebars.registerHelper('date_format', function(context, block) {
+                return $.timeago(new Date(context*1000));
+            });
+            Handlebars.registerHelper('image_url', function(context, block) {
+                if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
+                    return 'http://images.weserv.nl/?url='+encodeURIComponent(context.substr(context.indexOf('://')+3))+'&w='+self.appModel.get('colWidth');
+                } else {
+                    return context;
+                }
+            });
             this.storyTemplate = Handlebars.compile($("#ruddl-story-template").html());
             this.commentTemplate = Handlebars.compile($("#ruddl-comment-template").html());
-            this.collection = new App.Collections.Stories();
 
             $(window).on('resize', this.resize);
 
@@ -225,7 +238,7 @@
             'click .premalink': 'showComments'
         },
         initialize: function(options) {
-            _.bindAll(this, 'render');
+            _.bindAll(this, 'render', 'showComments');
             this.parent = options.parent;
         },
         render: function() {
@@ -264,19 +277,26 @@
             return false;
         }
     });
+
+    App.Router.Main = Backbone.Router.extend({
+        routes: {
+            "": "defaultRoute",
+            "feed/:subreddit/:section/:after": "getStories"
+        },
+        initialize: function(options) {
+            _.bindAll(this, 'defaultRoute','getStories');
+        },
+        defaultRoute: function() {
+            new App.Views.Main();
+        },
+        getStories: function(subreddit, section, after) {
+
+        }
+    });
 })(jQuery);
 
 
 $(function() {
-    var ruddl = new App.Views.Main();
-    Handlebars.registerHelper('date_format', function(context, block) {
-        return $.timeago(new Date(context*1000));
-    });
-    Handlebars.registerHelper('image_url', function(context, block) {
-        if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
-            return 'http://images.weserv.nl/?url='+encodeURIComponent(context.substr(context.indexOf('://')+3))+'&w='+ruddl.appModel.get('colWidth');
-        } else {
-            return context;
-        }
-    });
+    var ruddl = new App.Router.Main();
+    Backbone.history.start();
 });
