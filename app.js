@@ -91,6 +91,7 @@
             this.appModel.set({currentSubreddit: subreddit, currentAfter: '0', isRefresh: false});
             $("html, body").animate({ scrollTop: 0 }, "slow");
             $(e.target).blur();
+            mixpanel.track("Subreddit Changed",{'subreddit':subreddit});
             return false;
         },
         changeSection: function(e) {
@@ -99,6 +100,7 @@
             $(e.currentTarget).addClass('active');
             this.appModel.set({currentSection: section, currentAfter: '0', isRefresh: false});
             $("html, body").animate({ scrollTop: 0 }, "slow");
+            mixpanel.track("Section Changed",{'section':section});
             return false;
         },
         loadNew: function(e) {
@@ -110,6 +112,7 @@
         loadMore: function(e) {
             this.appModel.set({isRefresh: false});
             this.getStories();
+            mixpanel.track("Load More Clicked");
             return false;
         },
         checkUpdates: function(e) {
@@ -277,6 +280,7 @@
                 comments.slideToggle();
                 content.slideToggle();
             }
+            mixpanel.track("Show Comments Clicked");
             return false;
         }
     });
