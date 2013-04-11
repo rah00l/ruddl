@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class Ruddl
 
   def parse_feed_item(item)
@@ -105,7 +107,7 @@ class Ruddl
     end
 
     if not best_image.nil?
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, item['data']['url'], URI.join('http://reddit.com/', item['data']['permalink']))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
       rdoc
     else
       nil
