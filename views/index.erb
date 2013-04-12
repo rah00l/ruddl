@@ -88,13 +88,18 @@
 </script>
 <script id="ruddl-comment-template" type="text/x-handlebars-template">
   {{#each .}}
-  <div class="comment">
-    <p class="tagline">
-      <a target="_blank" href="http://www.reddit.com/user/{{author}}" class="author">{{author}}</a>
-      <span class="points">{{points}} points</span><span class="time">{{date_format created_utc}}</span>
-    </p>
-    {{{body_html}}}
-    <a target="_blank" class="permalink" href="{{permalink}}">permalink</a>
-  </div>
+      <div class="comment">
+        <p class="tagline">
+          <a target="_blank" href="http://www.reddit.com/user/{{author}}" class="author">{{author}}</a>
+          <span class="points">{{points}} points</span><span class="time">{{date_format created_utc}}</span>
+        </p>
+        {{{body_html}}}
+        <a target="_blank" class="permalink" href="{{permalink}}">permalink</a>
+      </div>
   {{/each}}
+  {{#unless .}}
+      <div class="comment">
+        No comments (yet)...
+      </div>
+  {{/unless}}
 </script>
