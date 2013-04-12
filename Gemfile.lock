@@ -26,6 +26,7 @@ GEM
     mini_magick (3.4)
       subexec (~> 0.2.1)
     multi_json (1.5.0)
+    newrelic_rpm (3.6.0.83)
     nokogiri (1.5.5-x86-mingw32)
     pusher (0.11.1)
       multi_json (~> 1.0)
@@ -77,6 +78,7 @@ PLATFORMS
 DEPENDENCIES
   fastimage
   mini_magick
+  newrelic_rpm
   pusher
   redis
   ruby-readability

@@ -11,6 +11,7 @@ require 'yajl/json_gem'
 require 'fastimage'
 require 'sinatra-websocket'
 require 'pusher'
+require 'newrelic_rpm'
 
 Bundler.require
 
