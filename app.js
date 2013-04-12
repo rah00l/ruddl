@@ -268,10 +268,8 @@
                     type:'GET',
                     url: '/comments/'+key.split('_')[1],
                     success:function (data) {
-                        $.each(data, function(index, item){
-                            var newComment = $(self.parent.commentTemplate(item));
-                            comments.append(newComment);
-                        });
+                        var newComments = $(self.parent.commentTemplate(data));
+                        comments.append(newComments);
                         comments.slideToggle();
                         content.slideToggle();
                     }
