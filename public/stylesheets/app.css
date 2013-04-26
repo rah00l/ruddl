@@ -68,7 +68,7 @@ dl.sub-nav dd.active a {
     position: inherit;
     background: #FFF;
     padding: 5px;
-    margin-top: 50px;
+    margin-top: 40px;
     margin-bottom: 20px;
     clear: both;
     overflow: inherit;
@@ -263,16 +263,6 @@ div.comments{
     border-bottom: 1px solid #f0c36d;
     z-index: 100;
 }
-.notification.anim {
-    -webkit-transition: top 0.6s ease-out;
-    -moz-transition: top 0.6s ease-out;
-    -ms-transition: top 0.6s ease-out;
-    -o-transition: top 0.6s ease-out;
-    transition: top 0.6s ease-out;
-}
-.notification.active {
-    top: 0;
-}
 .notification .actions {
     margin-top: 0.5em;
 }
@@ -282,6 +272,7 @@ div.comments{
     color: #fff;
     display: inline-block;
     padding: 0.3em;
+    font-weight: bold;
 }
 
 .notification .dismiss-btn {
@@ -289,8 +280,10 @@ div.comments{
     margin-left: 1em;
 }
 
-@media all and (min-width: 50em) {
+@media all and (min-width: 500px) {
     .notification .msg {
+        color: #666;
+        font-weight: bold;
         float: left;
         width: 70%;
     }
@@ -299,5 +292,11 @@ div.comments{
         text-align: right;
         width: 30%;
         margin-top: -0.3em;
+    }
+}
+
+@media all and (max-width: 499px) {
+    .notification {
+        display: none !important;
     }
 }
