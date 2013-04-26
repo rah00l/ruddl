@@ -50,7 +50,9 @@
         events: {
             'change #selSubreddit': 'changeSubreddit',
             'click .sub-nav dd': 'changeSection',
-            'click #load-more': 'loadMore'
+            'click #load-more': 'loadMore',
+            'click #add-to-chrome': 'addToChrome',
+            'click #dismiss-notification': 'dismissNotification'
         },
         initialize: function() {
             _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadNew', 'loadMore', 'checkUpdates', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
@@ -85,6 +87,10 @@
             /*Pusher.log = function(message) {
                 if (window.console && window.console.log) window.console.log(message);
             };*/
+
+            if (typeof chrome !== "undefined" && !chrome.app.isInstalled) {
+                $('#notification').fadeIn();
+            }
         },
         changeSubreddit: function(e) {
             var subreddit = $(e.target).find(":selected").val();
@@ -113,6 +119,20 @@
             this.appModel.set({isRefresh: false});
             this.getStories();
             mixpanel.track("Load More Clicked");
+            return false;
+        },
+        addToChrome: function(e) {
+            chrome.webstore.install("https://chrome.google.com/webstore/detail/llpknfhbmlngapjlboenfmmeminfdpil",
+            function(e) {
+                $('#notification').fadeOut();
+            },
+            function(e) {
+                console.log(e);
+            });
+            return false;
+        },
+        dismissNotification: function(e) {
+            $('#notification').fadeOut();
             return false;
         },
         checkUpdates: function(e) {

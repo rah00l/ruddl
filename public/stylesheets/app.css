@@ -245,3 +245,59 @@ div.comments{
 .ui-pnotify.custom .ui-pnotify-title {
     font-weight: bold;
 }
+
+
+.action {
+    display: inline-block;
+    padding: 0.5em;
+    border: 1px solid #000;
+}
+.notification {
+    position: fixed;
+    top: 45px;
+    left: 0;
+    width: 100%;
+    padding: 14px;
+    overflow: hidden;
+    background: #f9edbe;
+    border-bottom: 1px solid #f0c36d;
+    z-index: 100;
+}
+.notification.anim {
+    -webkit-transition: top 0.6s ease-out;
+    -moz-transition: top 0.6s ease-out;
+    -ms-transition: top 0.6s ease-out;
+    -o-transition: top 0.6s ease-out;
+    transition: top 0.6s ease-out;
+}
+.notification.active {
+    top: 0;
+}
+.notification .actions {
+    margin-top: 0.5em;
+}
+.notification .btn {
+    border: 1px solid #f0c36d;
+    background: #f0c36d;
+    color: #fff;
+    display: inline-block;
+    padding: 0.3em;
+}
+
+.notification .dismiss-btn {
+    display: inline-block;
+    margin-left: 1em;
+}
+
+@media all and (min-width: 50em) {
+    .notification .msg {
+        float: left;
+        width: 70%;
+    }
+    .notification .actions {
+        float: right;
+        text-align: right;
+        width: 30%;
+        margin-top: -0.3em;
+    }
+}
