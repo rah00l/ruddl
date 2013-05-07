@@ -65,7 +65,7 @@ class MyApp < Sinatra::Base
           adshown = false
           Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('notification', @feed['data']['children'].length)
           @feed['data']['children'].each_with_index do |item, index|
-            if index == rand(0..@feed['data']['children'].length) && !adshown
+            if index == rand(0..@feed['data']['children'].length-1) && !adshown
               Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('ad', {'key' => 'ad','ad' => true}.to_json)
               adshown = true
             end
