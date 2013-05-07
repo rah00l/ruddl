@@ -96,6 +96,15 @@
             if (typeof chrome !== "undefined" && !chrome.app.isInstalled) {
                 $('#notification').fadeIn();
             }
+
+            var facts = new App.Collections.Facts();
+            var p = facts.fetch();
+            p.done(function(){
+                var factsView = new App.Views.Facts({
+                    collection: facts
+                });
+                console.log(factsView.render().el);
+            });
         },
         changeSubreddit: function(e) {
             var subreddit = $(e.target).find(":selected").val();
@@ -357,6 +366,24 @@
         },
         render: function() {
             this.setElement(this.parent.adTemplate(this.model.attributes));
+            return this;
+        }
+    });
+
+    App.Models.Fact = Backbone.Model.extend();
+
+    App.Collections.Facts = Backbone.Collection.extend({
+        model: App.Models.Fact,
+        url: '/json/facts.json'
+    });
+
+    App.Views.Facts = Backbone.View.extend({
+        initialize: function(options) {
+            _.bindAll(this, "render");
+            this.template = _.template($('#ruddl-fact-template').html());
+        },
+        render: function(eventName) {
+            this.setElement(this.template(this.collection.models));
             return this;
         }
     });
