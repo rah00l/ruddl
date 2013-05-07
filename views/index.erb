@@ -13,6 +13,10 @@
           <dd><a data-section="top" href="#">top</a></dd>
         </dl>
       </div>
+      <div class="divider"></div>
+      <div class="web facts">
+        <strong>Did you know?</strong> You can click on the title of the story to see top comments from reddit
+      </div>
       <div class="subreddits">
         <select id="selSubreddit">
           <option value="front">front page</option>
@@ -119,6 +123,12 @@
          {{{inject "#ad_unit"}}}
     </div>
   </div>
+</script>
+<script id="ruddl-fact-template" type="text/x-handlebars-template">
+  <strong>Did you know?</strong>
+  {{#each .}}
+    <span class="fact">{{{fact}}}</span>
+  {{/each}}
 </script>
 <div id="ad_unit" style="display: none">
   <script type="text/javascript"><!--

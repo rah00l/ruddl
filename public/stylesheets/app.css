@@ -161,6 +161,12 @@ div.comments{
     color: #CCC;
 }
 
+.topbar .facts {
+    float: left;
+    padding-left: 10px;
+    color: #999;
+}
+
 @media (min-width:500px) {
     .mobile {
         display: none !important;
@@ -257,7 +263,7 @@ div.comments{
     top: 45px;
     left: 0;
     width: 100%;
-    padding: 14px;
+    padding: 15px 40px 10px 15px;
     overflow: hidden;
     background: #f9edbe;
     border-bottom: 1px solid #f0c36d;
