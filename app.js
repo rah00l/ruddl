@@ -59,6 +59,7 @@
             var self = this;
             this.appModel = new App.Models.Main();
             this.collection = new App.Collections.Stories();
+            this.adCollection = new App.Collections.Ads();
 
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
@@ -77,8 +78,12 @@
                     return context;
                 }
             });
+            Handlebars.registerHelper('inject', function(context, block) {
+                return $(context).html();
+            });
             this.storyTemplate = Handlebars.compile($("#ruddl-story-template").html());
             this.commentTemplate = Handlebars.compile($("#ruddl-comment-template").html());
+            this.adTemplate = Handlebars.compile($("#ruddl-ad-template").html());
 
             $(window).on('resize', this.resize);
 
@@ -112,6 +117,7 @@
         loadNew: function(e) {
             //appRouter.navigate(this.appModel.get('currentURL'))
             this.collection.reset();
+            this.adCollection.reset();
             this.container.empty();
             this.getStories();
         },
@@ -229,6 +235,20 @@
                     }
                 }
             });
+            channel.bind('ad', function(data) {
+                if(data != null) {
+                    var adModel = new App.Models.Ad(data);
+                    var exists = self.adCollection.get(adModel.id);
+                    if(!exists) {
+                        var adView = new App.Views.Ad({model: adModel, parent: self});
+                        var newAd = $(adView.render().el);
+                        self.adCollection.add(adView.model);
+                        self.container.append(newAd).masonry('appended', newAd, true);
+                        newAd.show();
+                        self.calcCols(true);
+                    }
+                }
+            });
             channel.bind('notification', function(data) {
                 if(data == -1) {
                     notice.pnotify({hide: true});
@@ -319,6 +339,25 @@
             }
             mixpanel.track("Show Comments Clicked");
             return false;
+        }
+    });
+
+    App.Models.Ad = Backbone.Model.extend({
+        idAttribute: "key"
+    });
+
+    App.Collections.Ads = Backbone.Collection.extend({
+        model: App.Models.Ad
+    });
+
+    App.Views.Ad = Backbone.View.extend({
+        initialize: function(options) {
+            _.bindAll(this, 'render');
+            this.parent = options.parent;
+        },
+        render: function() {
+            this.setElement(this.parent.adTemplate(this.model.attributes));
+            return this;
         }
     });
 

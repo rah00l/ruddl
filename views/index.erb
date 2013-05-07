@@ -81,9 +81,9 @@
     <div class="comments"></div>
     <div class="content">
       {{#if image}}
-        <a href="{{link}}" target="_blank"><img class="lazy" src="{{image_url image}}"/></a>
+      <a href="{{link}}" target="_blank"><img class="lazy" src="{{image_url image}}"/></a>
       {{else}}
-        {{{text}}}
+      {{{text}}}
       {{/if}}
     </div>
   </div>
@@ -105,3 +105,30 @@
       </div>
   {{/unless}}
 </script>
+<script id="ruddl-ad-template" type="text/x-handlebars-template">
+  <div id="ad" class="box panel web">
+    <div class='description'>
+      <div class='description_content'>
+        <small class="premalink">A D V E R T I S E M E N T</small>
+      </div>
+      <div class='icon'>
+        <img src="http://g.etfv.co/http://www.ruddl.com" width="16" height="16" />
+      </div>
+    </div>
+    <div class="content" style="text-align:center;padding:5px;">
+         {{{inject "#ad_unit"}}}
+    </div>
+  </div>
+</script>
+<div id="ad_unit" style="display: none">
+  <script type="text/javascript"><!--
+  google_ad_client = "ca-pub-7407025789001528";
+  /* ruddl_live */
+  google_ad_slot = "7768746886";
+  google_ad_width = 336;
+  google_ad_height = 280;
+  //-->
+  </script>
+  <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+  </script>
+</div>
