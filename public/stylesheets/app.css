@@ -164,7 +164,7 @@ div.comments{
 .topbar .facts {
     float: left;
     padding-left: 10px;
-    color: #999;
+    color: #999080;
 }
 
 @media (min-width:500px) {
