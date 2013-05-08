@@ -377,12 +377,31 @@
     App.Views.Facts = Backbone.View.extend({
         el: '.facts',
         initialize: function(options) {
-            _.bindAll(this, "render");
+            _.bindAll(this, "startRotator","prepareRotator","rotateFacts","render");
             this.template = Handlebars.compile($('#ruddl-fact-template').html());
             this.collection.bind("reset", this.render);
         },
+        startRotator: function(elem) {
+            var self = this;
+            this.prepareRotator(elem);
+            setInterval(function(){
+                self.rotateFacts(elem);
+            }, 15000);
+        },
+        prepareRotator: function(elem) {
+            $(elem+":first").show().addClass("active");
+        },
+        rotateFacts: function(elem) {
+            var active = $(elem+".active");
+            var next = active.next();
+            if (next.length == 0)
+                next = $(elem+":first");
+            active.removeClass("active").hide();
+            next.addClass("active").fadeIn();
+        },
         render: function(eventName) {
             $(this.el).html(this.template(this.collection.toJSON()));
+            this.startRotator(".facts .fact");
             return this;
         }
     });
