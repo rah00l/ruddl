@@ -1,6 +1,6 @@
 <div id="wrap">
     <div class="topbar">
-      <div class="name">
+      <div class="name" title="Better way to browse reddit. See top comments right on the page. Browse other subreddits/sections. Auto-updates every minute.">
         <img class="logo" style="padding-right: 0px;" src="/images/logo_img.png">
         <img class="web" style="padding-left: 0px;" src="/images/logo_text.png">
       </div>
@@ -12,6 +12,10 @@
           <dd class="web"><a data-section="controversial" href="#">controversial</a></dd>
           <dd><a data-section="top" href="#">top</a></dd>
         </dl>
+      </div>
+      <div class="divider web"></div>
+      <div class="web facts">
+        <strong>Did you know?</strong> You can click on the title of the story to see top comments from reddit
       </div>
       <div class="subreddits">
         <select id="selSubreddit">
@@ -119,6 +123,12 @@
          {{{inject "#ad_unit"}}}
     </div>
   </div>
+</script>
+<script id="ruddl-fact-template" type="text/x-handlebars-template">
+  <strong><i class="icon-lightbulb"></i> Did you know?</strong>
+  {{#each .}}
+    <span class="fact" style="display:none">{{{fact}}}</span>
+  {{/each}}
 </script>
 <div id="ad_unit" style="display: none">
   <script type="text/javascript"><!--
