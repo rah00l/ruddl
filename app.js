@@ -56,7 +56,6 @@
         },
         initialize: function() {
             _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadNew', 'loadMore', 'checkUpdates', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
-            var self = this;
             this.appModel = new App.Models.Main();
             this.collection = new App.Collections.Stories();
             this.adCollection = new App.Collections.Ads();
@@ -68,19 +67,7 @@
             this.listenTo(this.appModel, 'change:currentSection', this.loadNew);
             this.listenTo(this.appModel, 'change:currentSubreddit', this.loadNew);
 
-            Handlebars.registerHelper('date_format', function(context, block) {
-                return $.timeago(new Date(context*1000));
-            });
-            Handlebars.registerHelper('image_url', function(context, block) {
-                if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
-                    return 'http://images.weserv.nl/?url='+encodeURIComponent(context.substr(context.indexOf('://')+3))+'&w='+self.appModel.get('colWidth');
-                } else {
-                    return context;
-                }
-            });
-            Handlebars.registerHelper('inject', function(context, block) {
-                return $(context).html();
-            });
+            this.registerHandlebarHelpers();
             this.storyTemplate = Handlebars.compile($("#ruddl-story-template").html());
             this.commentTemplate = Handlebars.compile($("#ruddl-comment-template").html());
             this.adTemplate = Handlebars.compile($("#ruddl-ad-template").html());
@@ -96,6 +83,24 @@
             if (typeof chrome !== "undefined" && !chrome.app.isInstalled) {
                 $('#notification').fadeIn();
             }
+
+            this.initFacts();
+        },
+        registerHandlebarHelpers: function() {
+            var self = this;
+            Handlebars.registerHelper('date_format', function(context, block) {
+                return $.timeago(new Date(context*1000));
+            });
+            Handlebars.registerHelper('image_url', function(context, block) {
+                if (context.indexOf('pagepeeker') == -1 && context.indexOf('gif') == -1) {
+                    return 'http://images.weserv.nl/?url='+encodeURIComponent(context.substr(context.indexOf('://')+3))+'&w='+self.appModel.get('colWidth');
+                } else {
+                    return context;
+                }
+            });
+            Handlebars.registerHelper('inject', function(context, block) {
+                return $(context).html();
+            });
         },
         changeSubreddit: function(e) {
             var subreddit = $(e.target).find(":selected").val();
@@ -176,6 +181,13 @@
                 itemSelector : '.box',
                 isAnimated: false
             });
+        },
+        initFacts: function() {
+            var facts = new App.Collections.Facts();
+            var factsView = new App.Views.Facts({
+                collection: facts
+            });
+            facts.fetch({reset :true});
         },
         resize: function(e) {
             this.calcCols(true);
@@ -357,6 +369,45 @@
         },
         render: function() {
             this.setElement(this.parent.adTemplate(this.model.attributes));
+            return this;
+        }
+    });
+
+    App.Models.Fact = Backbone.Model.extend();
+
+    App.Collections.Facts = Backbone.Collection.extend({
+        model: App.Models.Fact,
+        url: '/json/facts.json'
+    });
+
+    App.Views.Facts = Backbone.View.extend({
+        el: '.facts',
+        initialize: function(options) {
+            _.bindAll(this, "startRotator","prepareRotator","rotateFacts","render");
+            this.template = Handlebars.compile($('#ruddl-fact-template').html());
+            this.collection.bind("reset", this.render);
+        },
+        startRotator: function(elem) {
+            var self = this;
+            this.prepareRotator(elem);
+            setInterval(function(){
+                self.rotateFacts(elem);
+            }, 15000);
+        },
+        prepareRotator: function(elem) {
+            $(elem+":first").show().addClass("active");
+        },
+        rotateFacts: function(elem) {
+            var active = $(elem+".active");
+            var next = active.next();
+            if (next.length == 0)
+                next = $(elem+":first");
+            active.removeClass("active").hide();
+            next.addClass("active").fadeIn();
+        },
+        render: function(eventName) {
+            $(this.el).html(this.template(this.collection.toJSON()));
+            this.startRotator(".facts .fact");
             return this;
         }
     });
