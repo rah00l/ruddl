@@ -98,13 +98,10 @@
             }
 
             var facts = new App.Collections.Facts();
-            var p = facts.fetch();
-            p.done(function(){
-                var factsView = new App.Views.Facts({
-                    collection: facts
-                });
-                console.log(factsView.render().el);
+            var factsView = new App.Views.Facts({
+                collection: facts
             });
+            facts.fetch({reset :true});
         },
         changeSubreddit: function(e) {
             var subreddit = $(e.target).find(":selected").val();
@@ -378,12 +375,14 @@
     });
 
     App.Views.Facts = Backbone.View.extend({
+        el: '.facts',
         initialize: function(options) {
             _.bindAll(this, "render");
-            this.template = _.template($('#ruddl-fact-template').html());
+            this.template = Handlebars.compile($('#ruddl-fact-template').html());
+            this.collection.bind("reset", this.render);
         },
         render: function(eventName) {
-            this.setElement(this.template(this.collection.models));
+            $(this.el).html(this.template(this.collection.toJSON()));
             return this;
         }
     });
