@@ -60,7 +60,7 @@ class Ruddl
 
   def parse_wikipedia(item)
     puts 'parsing wikipedia'
-    title = URI(item['data']['url']).path.gsub('/wiki/', '')
+    title = URI.parse(URI.escape(item['data']['url'])).path.gsub('/wiki/', '')
     wiki_json = JSON.parse(open("http://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&format=json&iiprop=url&iilimit=1&generator=images&titles=#{title}&gimlimit=1").read)
     begin
       rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
