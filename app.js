@@ -99,7 +99,7 @@
                 }
             });
             Handlebars.registerHelper('inject', function(context, block) {
-                return $(context).html();
+                return (typeof(window.google_jobrunner) === "undefined") ? $("#no_ad").html() : $(context).html();
             });
         },
         changeSubreddit: function(e) {
