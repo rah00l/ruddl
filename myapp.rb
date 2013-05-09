@@ -63,9 +63,11 @@ class MyApp < Sinatra::Base
         if @feed['data']['children']
           ruddl = Ruddl.new
           adshown = false
+          rand_pos = rand(0..@feed['data']['children'].length-1)
           Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('notification', @feed['data']['children'].length)
           @feed['data']['children'].each_with_index do |item, index|
-            if index == rand(0..@feed['data']['children'].length-1) && !adshown
+            puts @feed['data']['children'].length-1
+            if index == rand_pos && !adshown
               Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('ad', {'key' => 'ad','ad' => true}.to_json)
               adshown = true
             end
