@@ -125,6 +125,10 @@ div.comments{
     display: block;
 }
 
+#ad .content {
+    padding: 15px;
+}
+
 .topbar {
     position: fixed;
     top: 0;
