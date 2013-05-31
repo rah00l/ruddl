@@ -164,12 +164,16 @@ div.comments{
     padding-right: 10px;
     font-weight: bold;
     color: #CCC;
+    height: 100%;
 }
 
 .topbar .facts {
     float: left;
     padding-left: 10px;
     color: #999080;
+    overflow: hidden;
+    width: 49%;
+    height: 100%;
 }
 
 @media (min-width:500px) {
