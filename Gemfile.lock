@@ -70,6 +70,7 @@ PLATFORMS
 DEPENDENCIES
   fastimage
   mini_magick
+  nokogiri
   pusher
   redis
   ruby-readability
