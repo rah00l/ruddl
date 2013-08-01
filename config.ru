@@ -9,7 +9,6 @@ require 'redis'
 require 'digest'
 require 'yajl/json_gem'
 require 'fastimage'
-require 'sinatra-websocket'
 require 'pusher'
 
 Bundler.require
