@@ -68,6 +68,7 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/URI.js/1.7.2/URI.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.rc.1/handlebars.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.1.0/jquery.timeago.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/URI.js/1.7.2/URI.min.js"></script>
 <script src="//js.pusher.com/2.0/pusher.min.js"></script>
 <script src="/javascripts/jquery.pnotify.min.js"></script>
 <script src="/javascripts/add2home.js"></script>
@@ -85,9 +86,9 @@
     <div class="comments"></div>
     <div class="content">
       {{#if image}}
-      <a href="{{link}}" target="_blank"><img class="lazy" src="{{image_url image}}"/></a>
+        <a class="{{#if embed}}embed{{/if}}" data-embed='{{encode embed}}' href="{{link}}" target="_blank"><img src="{{image_url image}}"/>{{#if embed}}<div class="play"><i class="icon-play-circle"></i></div>{{/if}}</a>
       {{else}}
-      {{{text}}}
+        {{{text}}}
       {{/if}}
     </div>
   </div>

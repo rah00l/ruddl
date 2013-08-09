@@ -315,3 +315,15 @@ div.comments{
         display: none !important;
     }
 }
+
+.play {
+    color: #f2f2f2;
+    font-size: 7em;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 70px;
+    height: 70px;
+    margin: -35px 0 0 -35px;
+    opacity: 0.5;
+}

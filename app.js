@@ -101,6 +101,12 @@
             Handlebars.registerHelper('inject', function(context, block) {
                 return (typeof(window.google_jobrunner) === "undefined") ? $("#no_ad").html() : $(context).html();
             });
+            Handlebars.registerHelper('encode', function(context, block) {
+                var embed = $(context);
+                embed = embed.attr('width', self.appModel.get('colWidth')-12);
+                embed = embed.attr('src', URI(embed.attr('src')).addSearch('autoplay','1').addSearch('controls','2').toString());
+                return $('<div>').text(embed.prop('outerHTML')).html();
+            });
         },
         changeSubreddit: function(e) {
             var subreddit = $(e.target).find(":selected").val();
@@ -294,7 +300,8 @@
 
     App.Views.Story = Backbone.View.extend({
         events: {
-            'click .premalink': 'showComments'
+            'click .premalink': 'showComments',
+            'click .embed': 'showEmbed'
         },
         initialize: function(options) {
             _.bindAll(this, 'render', 'showComments');
@@ -350,6 +357,16 @@
                 content.slideToggle();
             }
             mixpanel.track("Show Comments Clicked");
+            return false;
+        },
+        showEmbed: function(e) {
+            var self = this;
+            var key = this.model.id;
+            var embed_code = $('#'+key).find('.embed').attr('data-embed');
+            embed_code = $('<div>').html(embed_code).text();
+            var content = $('#'+key).find('.content');
+            content.html(embed_code);
+            this.parent.container.masonry('reload');
             return false;
         }
     });
