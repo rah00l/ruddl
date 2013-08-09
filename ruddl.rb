@@ -6,7 +6,7 @@ class Ruddl
     rdoc = nil
     if (item['data']['over_18'] == false)
       if (item['data']['url'] =~ /#{['jpg', 'jpeg', 'gif', 'png'].map { |m| Regexp.escape m }.join('|')}/)
-        rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['url'], nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
+        rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['url'], nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
       elsif (item['data']['domain'].include? 'imgur')
         rdoc = parse_imgur(item)
       elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
@@ -29,7 +29,7 @@ class Ruddl
   def parse_video(item)
     puts 'parsing video'
     begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], Nokogiri::HTML(item['data']['media_embed']['content']).text, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
     rescue => exception
       puts exception
     end
@@ -45,7 +45,7 @@ class Ruddl
       image = album_json['album']['images'][0]['image']['hash']
     end
     ext = (File.extname(image).length == 0) ? '.jpg' : ''
-    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image+ext), nil, item['data']['url'], URI.join('http://reddit.com/', URI.join('http://reddit.com/',  URI.encode(item['data']['permalink']))))
+    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image+ext), nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.join('http://reddit.com/',  URI.encode(item['data']['permalink']))))
     rdoc
   end
 
@@ -54,7 +54,7 @@ class Ruddl
     host = "http://i.qkme.me"
     image = URI(item['data']['url'])
     ext = '.jpg'
-    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image.path.gsub("/meme/", "").gsub("/", "")+ext), nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
+    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image.path.gsub("/meme/", "").gsub("/", "")+ext), nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
     rdoc
   end
 
@@ -63,7 +63,7 @@ class Ruddl
     title = URI.parse(URI.escape(item['data']['url'])).path.gsub('/wiki/', '')
     wiki_json = JSON.parse(open("http://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&format=json&iiprop=url&iilimit=1&generator=images&titles=#{title}&gimlimit=1").read)
     begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
       rdoc
     rescue => exception
       puts exception
@@ -107,7 +107,7 @@ class Ruddl
     end
 
     if not best_image.nil?
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
       rdoc
     else
       nil
@@ -117,7 +117,7 @@ class Ruddl
   def parse_reddit(item)
     puts 'parsing reddit'
     begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], nil, Nokogiri::HTML(item['data']['selftext_html']).text, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
+      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], nil, nil, Nokogiri::HTML(item['data']['selftext_html']).text, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
       rdoc
     rescue => exception
       puts exception
