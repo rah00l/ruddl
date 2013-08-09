@@ -104,7 +104,7 @@
             Handlebars.registerHelper('encode', function(context, block) {
                 var embed = $(context);
                 embed = embed.attr('width', self.appModel.get('colWidth')-12);
-                embed = embed.attr('src', embed.attr('src')+'&autoplay=1&controls=2')
+                embed = embed.attr('src', URI(embed.attr('src')).addSearch('autoplay','1').addSearch('controls','2').toString());
                 return $('<div>').text(embed.prop('outerHTML')).html();
             });
         },
