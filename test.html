@@ -1,0 +1,24 @@
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+    $(function(){
+        var ws = new WebSocket("ws://vcap.me:9292/test/feed/wtf/hot/0");
+        ws.onopen = function(e) {
+            $('#results').append(e);
+        };
+        ws.onmessage = function(e) {
+            // Receives a message.
+            var data = $.parseJSON(e.data);
+            if(data.type == 'notification') {
+                $('#results').append(e.data);
+            }
+        };
+        ws.onclose = function(e) {
+            $('#results').append(e.data);
+        };
+    });
+
+</script>
+
+<div id="results">
+
+</div>

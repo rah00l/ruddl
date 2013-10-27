@@ -2,27 +2,61 @@
 
 module RuddlFactory
 
-  def self.parse_feed_item(item)
-    rdoc = nil
-    if (item['data']['over_18'] == false)
-      if (item['data']['url'] =~ /#{['jpg', 'jpeg', 'gif', 'png'].map { |m| Regexp.escape m }.join('|')}/)
-        rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['url'], nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
-      elsif (item['data']['domain'].include? 'imgur')
-        rdoc = self.parse_imgur(item)
-      elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
-        rdoc = self.parse_quickmeme(item)
-      elsif (item['data']['domain'].include? 'youtube' or item['data']['domain'].include? 'youtu.be' or item['data']['domain'].include? 'vimeo')
-        rdoc = self.parse_video(item)
-      elsif (item['data']['domain'].include? 'wikipedia')
-        rdoc = self.parse_wikipedia(item)
-      elsif (item['data']['url'].include? 'reddit.com')
-        rdoc = self.parse_reddit(item)
+  def self.get_feed_items(subreddit, section, after, cache)
+    @feed = nil
+    if (['hot', 'new', 'controversial', 'top'].include?(section))
+      if subreddit == 'front'
+        url = after.nil? ? "http://www.reddit.com/#{section}.json" : "http://www.reddit.com/#{section}.json?after=#{after}"
       else
-        rdoc = self.parse_misc(item)
+        url = after.nil? ? "http://www.reddit.com/r/#{subreddit}/#{section}.json" : "http://www.reddit.com/r/#{subreddit}/#{section}.json?after=#{after}"
+      end
+
+      if (cache.exists(url))
+        puts "loading from cache => #{url}"
+        @feed = Marshal.load(cache.get(url))
+      else
+        puts "requesting => #{url}"
+        @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
+        cache.set(url, Marshal.dump(@feed))
+        cache.expire(url, 30)
       end
     end
-    return rdoc
+    @feed
   end
+
+  def self.parse_feed_item(item, cache)
+    rdoc = nil
+    doc_key = item['data']['name']
+    if (cache.exists(doc_key))
+      puts "#{doc_key} found in cache"
+      rdoc = Marshal.load(cache.get(doc_key))
+    else
+      if (item['data']['over_18'] == false)
+        if (item['data']['url'] =~ /#{['jpg', 'jpeg', 'gif', 'png'].map { |m| Regexp.escape m }.join('|')}/)
+          rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['url'], nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
+        elsif (item['data']['domain'].include? 'imgur')
+          rdoc = self.parse_imgur(item)
+        elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
+          rdoc = self.parse_quickmeme(item)
+        elsif (item['data']['domain'].include? 'youtube' or item['data']['domain'].include? 'youtu.be' or item['data']['domain'].include? 'vimeo')
+          rdoc = self.parse_video(item)
+        elsif (item['data']['domain'].include? 'wikipedia')
+          rdoc = self.parse_wikipedia(item)
+        elsif (item['data']['url'].include? 'reddit.com')
+          rdoc = self.parse_reddit(item)
+        else
+          rdoc = self.parse_misc(item)
+        end
+        if rdoc
+          cache.set(doc_key, Marshal.dump(rdoc))
+          cache.expire(doc_key, 28800)
+        end
+      end
+    end
+    rdoc
+  end
+
+  private
 
   def self.parse_video(item)
     puts 'parsing video'

@@ -3,6 +3,7 @@
 require "sinatra/base"
 require "sinatra/reloader"
 require "sinatra/multi_route"
+require "sinatra-websocket"
 
 class Ruddl < Sinatra::Base
 
@@ -31,6 +32,13 @@ class Ruddl < Sinatra::Base
     erb :index
   end
 
+  get '/test' do
+    headers \
+      "Content-Type" => "text/html"
+
+    ERB.new(File.read('test.html')).result
+  end
+
   get '/app.js' do
     headers \
       "Content-Type" => "text/javascript"
@@ -38,54 +46,80 @@ class Ruddl < Sinatra::Base
     ERB.new(File.read('app.js')).result
   end
 
+  get '/test/feed/*/*/:after' do
+    if request.websocket?
+      @subreddit = params[:splat][0]
+      @section = params[:splat][1]
+      @section.empty? ? @section = 'hot' : @section
+      @after = params[:after];
+      @feed = RuddlFactory.get_feed_items(@subreddit, @section, @after, @@redis)
+      @channel = "#{@subreddit}-#{@section}-#{@after}"
+
+      request.websocket do |ws|
+
+        @con = {channel: @channel, socket: ws}
+
+        ws.onopen do
+          if @feed['data']['children']
+            adshown = false
+            rand_pos = rand(0..@feed['data']['children'].length-1)
+            ws.send({:type => 'notification', :data => @feed['data']['children'].length}.to_json)
+            @feed['data']['children'].each_with_index do |item, index|
+              if index == rand_pos && !adshown
+                ws.send({:type => 'ad', :data => true}.to_json)
+                adshown = true
+              end
+              rdoc = RuddlFactory.parse_feed_item(item, @@redis)
+              ws.send({:type => 'message', :data => rdoc.to_json}.to_json)
+            end
+            ws.send({:type => 'notification', :data => '-1'}.to_json)
+          end
+          settings.sockets << @con
+        end
+
+        ws.onmessage do |msg|
+          return_array = []
+          settings.sockets.each do |hash|
+            if hash[:channel] == @channel
+              return_array << hash
+            end
+          end
+          EM.next_tick { return_array.each{|s| s[:socket].send(msg) } }
+        end
+
+        ws.onclose do
+          settings.sockets.each do |hash|
+            if hash[:socket] == ws
+              settings.sockets.delete(hash)
+            end
+          end
+        end
+      end
+    end
+  end
+
   get '/feed/*/*/:after/:socket_id' do
     @subreddit = params[:splat][0]
     @section = params[:splat][1]
     @section.empty? ? @section = 'hot' : @section
     @after = params[:after];
-    if (['hot', 'new', 'controversial', 'top'].include?(@section))
-        if @subreddit == 'front'
-          url = @after.nil? ? "http://www.reddit.com/#{@section}.json" : "http://www.reddit.com/#{@section}.json?after=#{@after}"
-        else
-          url = @after.nil? ? "http://www.reddit.com/r/#{@subreddit}/#{@section}.json" : "http://www.reddit.com/r/#{@subreddit}/#{@section}.json?after=#{@after}"
+    @feed = RuddlFactory.get_feed_items(@subreddit, @section, @after, @@redis)
+    if @feed['data']['children']
+      adshown = false
+      rand_pos = rand(0..@feed['data']['children'].length-1)
+      channel = "#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"
+      Pusher[channel].trigger('notification', @feed['data']['children'].length)
+      @feed['data']['children'].each_with_index do |item, index|
+        if index == rand_pos && !adshown
+          Pusher[channel].trigger('ad', {'key' => 'ad','ad' => true}.to_json)
+          adshown = true
         end
-
-        if (@@redis.exists(url))
-          puts "loading from cache => #{url}"
-          @feed = Marshal.load(@@redis.get(url))
-        else
-          puts "requesting => #{url}"
-          @feed = JSON.parse(open(url, "User-Agent" => "ruddl by /u/jesalg").read)
-          @@redis.set(url, Marshal.dump(@feed))
-          @@redis.expire(url, 30)
-        end
-
-        if @feed['data']['children']
-          adshown = false
-          rand_pos = rand(0..@feed['data']['children'].length-1)
-          Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('notification', @feed['data']['children'].length)
-          @feed['data']['children'].each_with_index do |item, index|
-            puts @feed['data']['children'].length-1
-            if index == rand_pos && !adshown
-              Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('ad', {'key' => 'ad','ad' => true}.to_json)
-              adshown = true
-            end
-            doc_key = item['data']['name']
-            puts "#{index} => #{doc_key}"
-            if (@@redis.exists(doc_key))
-              puts "#{doc_key} found in cache"
-              rdoc = Marshal.load(@@redis.get(doc_key))
-            else
-              rdoc = RuddlFactory.parse_feed_item(item)
-            end
-            @@redis.set(doc_key, Marshal.dump(rdoc))
-            @@redis.expire(doc_key, 28800)
-            Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('story', rdoc.to_json)
-          end
-          Pusher["#{@subreddit}-#{@section}-#{@after}-#{params[:socket_id]}"].trigger('notification', '-1')
-        end
-        status 200
+        rdoc = RuddlFactory.parse_feed_item(item, @@redis)
+        Pusher[channel].trigger('story', rdoc.to_json)
+      end
+      Pusher[channel].trigger('notification', '-1')
     end
+    status 200
   end
 
   get '/comments/:id' do
