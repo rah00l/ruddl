@@ -1,6 +1,7 @@
 require './json_able'
 
 class RuddlDoc
+
   attr_accessor :key, :title, :image, :embed, :text, :link, :premalink
 
   def initialize(key, title, image, embed, text, link, premalink)
