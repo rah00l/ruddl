@@ -9,11 +9,10 @@ require 'redis'
 require 'digest'
 require 'yajl/json_gem'
 require 'fastimage'
-require 'pusher'
 
 Bundler.require
 
-require './ruddl_doc'
+Dir[File.dirname(__FILE__) + '/lib/*.rb'].each {|file| require file }
+
 require './ruddl'
-require './myapp'
-run MyApp
+run Ruddl

@@ -1,127 +1,110 @@
 # encoding: utf-8
 
-class Ruddl
+require "sinatra/base"
+require "sinatra/reloader"
+require "sinatra/multi_route"
+require "sinatra-websocket"
 
-  def parse_feed_item(item)
-    rdoc = nil
-    if (item['data']['over_18'] == false)
-      if (item['data']['url'] =~ /#{['jpg', 'jpeg', 'gif', 'png'].map { |m| Regexp.escape m }.join('|')}/)
-        rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['url'], nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
-      elsif (item['data']['domain'].include? 'imgur')
-        rdoc = parse_imgur(item)
-      elsif (item['data']['domain'].include? 'quickmeme' or item['data']['domain'].include? 'qkme')
-        rdoc = parse_quickmeme(item)
-      elsif (item['data']['domain'].include? 'youtube' or item['data']['domain'].include? 'youtu.be' or item['data']['domain'].include? 'vimeo')
-        rdoc = parse_video(item)
-      elsif (item['data']['domain'].include? 'wikipedia')
-        rdoc = parse_wikipedia(item)
-      elsif (item['data']['url'].include? 'reddit.com')
-        rdoc = parse_reddit(item)
-      else
-        rdoc = parse_misc(item)
-      end
-    end
-    return rdoc
+class Ruddl < Sinatra::Base
+
+  @@redis = Redis.new
+
+  register Sinatra::Synchrony
+  register Sinatra::MultiRoute
+
+  configure :development, :test do
+    Pusher.app_id = '31874'
+    Pusher.key    = '5521578d0346d88fe734'
+    Pusher.secret = 'd3b3be3d1db365f4b9e1'
+
+    enable :logging, :dump_errors, :raise_errors
+    register Sinatra::Reloader
   end
 
-  private
-
-  def parse_video(item)
-    puts 'parsing video'
-    begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], item['data']['media']['oembed']['thumbnail_url'], Nokogiri::HTML(item['data']['media_embed']['content']).text, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
-    rescue => exception
-      puts exception
-    end
-    rdoc
+  configure :production do
+    uri = URI.parse(ENV["REDISTOGO_URL"])
+    @@redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
   end
 
-  def parse_imgur(item)
-    puts 'parsing imgur'
-    host = "http://i.imgur.com"
-    image = URI(item['data']['url']).path
-    if (item['data']['url'].include? 'imgur.com/a/')
-      album_json = JSON.parse(open("http://api.imgur.com/2/album/"+image.gsub('/a/', '')+".json").read)
-      image = album_json['album']['images'][0]['image']['hash']
-    end
-    ext = (File.extname(image).length == 0) ? '.jpg' : ''
-    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image+ext), nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.join('http://reddit.com/',  URI.encode(item['data']['permalink']))))
-    rdoc
+  set :sockets, []
+
+  get '/' do
+    erb :index
   end
 
-  def parse_quickmeme(item)
-    puts 'parsing quickmeme'
-    host = "http://i.qkme.me"
-    image = URI(item['data']['url'])
-    ext = '.jpg'
-    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], URI.join(host, image.path.gsub("/meme/", "").gsub("/", "")+ext), nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
-    rdoc
+  get '/app.js' do
+    headers \
+      "Content-Type" => "text/javascript"
+
+    ERB.new(File.read('app.js')).result
   end
 
-  def parse_wikipedia(item)
-    puts 'parsing wikipedia'
-    title = URI.parse(URI.escape(item['data']['url'])).path.gsub('/wiki/', '')
-    wiki_json = JSON.parse(open("http://en.wikipedia.org/w/api.php?action=query&prop=imageinfo&format=json&iiprop=url&iilimit=1&generator=images&titles=#{title}&gimlimit=1").read)
-    begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], wiki_json['query']['pages']['-1']['imageinfo'][0]['url'], nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
-      rdoc
-    rescue => exception
-      puts exception
-    end
-  end
+  get '/feed/*/*/:after' do
+    if request.websocket?
+      @subreddit = params[:splat][0]
+      @section = params[:splat][1]
+      @section.empty? ? @section = 'hot' : @section
+      @after = params[:after];
+      @feed = RuddlFactory.get_feed_items(@subreddit, @section, @after, @@redis)
+      @channel = "#{@subreddit}-#{@section}-#{@after}"
 
-  def parse_misc(item)
-    puts "parsing misc => #{item['data']['url']}"
-    begin
-      uri = URI(item['data']['url'])
-      images = Nokogiri::HTML(open(uri)).css('//img/@src').to_a
-      best_image = nil
-      #sized_images = Hash.new
-      images.each do |image|
-        image = image.to_s
-        if not (['analytics', 'button', 'icon', 'loading', 'loader.gif', 'spacer.gif', 'clear.gif', 'transparent.gif', 'blank.gif', 'trans.gif', 'spinner.gif', 'gravatar', 'doubleclick', 'adserver'].any? { |s| image.include?(s) })
-          if not (image =~ /^http:/)
-            image = URI::join(uri.scheme+'://'+uri.host, image)
-          end
-          image = URI.parse(URI.escape(image.to_s)).to_s
-          unless (image =~ URI::regexp).nil?
-            puts "getting the size of => #{image}"
-            dimensions = FastImage.size(image)
-            #sized_images[image] = dimensions
-            if not dimensions.nil?
-              if (dimensions[0] >= 350 and dimensions[0]/dimensions[1] <= 2)
-                best_image = image.to_s
-                break
+      request.websocket do |ws|
+
+        @con = {channel: @channel, socket: ws}
+
+        ws.onopen do
+          if @feed['data']['children']
+            adshown = false
+            rand_pos = rand(0..@feed['data']['children'].length-1)
+            ws.send({:type => 'notification', :data => @feed['data']['children'].length}.to_json)
+            @feed['data']['children'].each_with_index do |item, index|
+              if index == rand_pos && !adshown
+                ws.send({:type => 'ad', :data => {'key' => 'ad','ad' => true}.to_json}.to_json)
+                adshown = true
               end
+              rdoc = RuddlFactory.parse_feed_item(item, @@redis)
+              ws.send({:type => 'story', :data => rdoc.to_json}.to_json)
+            end
+            ws.send({:type => 'notification', :data => -1}.to_json)
+          end
+          settings.sockets << @con
+        end
+
+        ws.onmessage do |msg|
+          return_array = []
+          settings.sockets.each do |hash|
+            if hash[:channel] == @channel
+              return_array << hash
+            end
+          end
+          EM.next_tick { return_array.each{|s| s[:socket].send(msg) } }
+        end
+
+        ws.onclose do
+          settings.sockets.each do |hash|
+            if hash[:socket] == ws
+              settings.sockets.delete(hash)
             end
           end
         end
       end
-    rescue => exception
-      puts exception
-    end
-
-    puts 'best_image'
-    if best_image.nil?
-      best_image = "http://pagepeeker.com/thumbs.php?size=x&url=#{URI::encode(item['data']['url'])}"
-    end
-
-    if not best_image.nil?
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
-      rdoc
-    else
-      nil
     end
   end
 
-  def parse_reddit(item)
-    puts 'parsing reddit'
-    begin
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], nil, nil, Nokogiri::HTML(item['data']['selftext_html']).text, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
-      rdoc
-    rescue => exception
-      puts exception
+  get '/comments/:id' do
+    content_type :json
+    @id = params[:id]
+    puts @id
+    @data = JSON.parse(open("http://www.reddit.com/comments/#{@id}.json?depth=1&limit=10&sort=best", "User-Agent" => "ruddl by /u/jesalg").read)
+    comments = Array.new
+    @data[1]['data']['children'].each_with_index do |item, index|
+      if (item['data']['body'])
+        item['data']['body_html'] = Nokogiri::HTML(item['data']['body_html']).text
+        item['data']['points'] = item['data']['ups'] - item['data']['downs']
+        item['data']['permalink'] = "http://www.reddit.com#{@data[0]['data']['children'][0]['data']['permalink']}#{item['data']['id']}"
+        comments.push(item['data'])
+      end
     end
+    comments.to_json
   end
-
 end
