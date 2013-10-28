@@ -8,8 +8,6 @@
 
     App.Models.Main = Backbone.Model.extend({
         defaults: {
-            key: '<%= Pusher.key %>',
-            socketId: null,
             colWidth: 0,
             updateInterval: null,
             isLoading: false,
@@ -21,9 +19,8 @@
             currentAfter: '0'
         },
         initialize: function() {
-            this.on('change:socketId', function(e) {
-                this.updateCurrentState();
-            });
+            this.updateCurrentState();
+
             this.on('change:currentSection', function(e) {
                 this.updateCurrentState();
             });
@@ -40,8 +37,8 @@
             });
         },
         updateCurrentState: function() {
-            this.set({currentChannel: this.get('currentSubreddit')+'-'+this.get('currentSection')+'-'+this.get('currentAfter')+'-'+this.get('socketId')});
-            this.set({currentURL: '/feed/'+this.get('currentSubreddit')+'/'+this.get('currentSection')+'/'+this.get('currentAfter')+'/'+this.get('socketId')});
+            this.set({currentChannel: this.get('currentSubreddit')+'-'+this.get('currentSection')+'-'+this.get('currentAfter')});
+            this.set({currentURL: '/feed/'+this.get('currentSubreddit')+'/'+this.get('currentSection')+'/'+this.get('currentAfter')});
         }
     });
 
@@ -55,7 +52,7 @@
             'click #dismiss-notification': 'dismissNotification'
         },
         initialize: function() {
-            _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadNew', 'loadMore', 'checkUpdates', 'unsubAllChannels', 'calcCols', 'initPusher', 'resize', 'getStories');
+            _.bindAll(this, 'changeSubreddit', 'changeSection', 'loadNew', 'loadMore', 'checkUpdates', 'calcCols', 'resize', 'getStories');
             this.appModel = new App.Models.Main();
             this.collection = new App.Collections.Stories();
             this.adCollection = new App.Collections.Ads();
@@ -63,7 +60,6 @@
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
 
-            this.listenTo(this.appModel, 'change:socketId', this.loadNew);
             this.listenTo(this.appModel, 'change:currentSection', this.loadNew);
             this.listenTo(this.appModel, 'change:currentSubreddit', this.loadNew);
 
@@ -74,11 +70,12 @@
 
             $(window).on('resize', this.resize);
 
-            this.pusher = new Pusher(this.appModel.get('key'));
-            this.pusher.connection.bind('connected', this.initPusher);
-            /*Pusher.log = function(message) {
-                if (window.console && window.console.log) window.console.log(message);
-            };*/
+            this.calcCols(false);
+            this.container.masonry({
+                itemSelector : '.box',
+                isAnimated: false
+            });
+            this.getStories();
 
             if (typeof chrome !== "undefined" && !chrome.app.isInstalled) {
                 $('#notification').fadeIn();
@@ -159,15 +156,6 @@
                 this.getStories();
             }
         },
-        unsubAllChannels: function() {
-            var self = this;
-            var objectKeys = $.map(this.pusher.channels.channels, function(value, key) {
-                return key;
-            });
-            $.each(objectKeys, function(index, value) {
-                self.pusher.unsubscribe(value);
-            });
-        },
         calcCols: function(reloadMasonry) {
             var self = this;
             $('div.box').css('width', function(index) {
@@ -179,14 +167,6 @@
 
             if(reloadMasonry)
                 this.container.masonry('reload');
-        },
-        initPusher: function(e) {
-            this.appModel.set({socketId: this.pusher.connection.socket_id});
-            this.calcCols(false);
-            this.container.masonry({
-                itemSelector : '.box',
-                isAnimated: false
-            });
         },
         initFacts: function() {
             var facts = new App.Collections.Facts();
@@ -205,7 +185,6 @@
             var refresh = self.appModel.get('isRefresh');
             clearInterval(self.appModel.get('updateInterval'));
             $.pnotify_remove_all();
-            self.unsubAllChannels();
             var notice = $.pnotify({
                 text: refresh ? 'Checking for updates...' : 'Loading...',
                 hide: false,
@@ -224,40 +203,35 @@
                 icon: 'icon-spinner icon-spin'
             });
 
-            var channel = this.pusher.subscribe(this.appModel.get('currentChannel'));
-            channel.bind('pusher:subscription_succeeded', function() {
-                $.ajax({
-                    type: 'get',
-                    url: self.appModel.get('currentURL')
-                });
-            });
-            channel.bind('story', function(data) {
-                if(data != null) {
-                    var storyModel = new App.Models.Story(data);
+            var ws = new WebSocket(window.location.origin.replace('http','ws') + '/' + self.appModel.get('currentURL'));
+            ws.onopen = function (e) {
+
+            };
+            ws.onmessage = function (e) {
+                var response = JSON.parse(e.data);
+                if (response.type == 'story') {
+                    var storyModel = new App.Models.Story(JSON.parse(response.data));
                     var exists = self.collection.get(storyModel.id);
-                    if(!exists) {
+                    if (!exists) {
                         var storyView = new App.Views.Story({model: storyModel, parent: self});
                         var newElems = $(storyView.render().el);
                         self.collection.add(storyView.model);
-                        if(refresh) {
+                        if (refresh) {
                             self.container.prepend(newElems).masonry();
                         } else {
                             self.container.append(newElems).masonry('appended', newElems, true);
                         }
-                        newElems.imagesLoaded(function() {
+                        newElems.imagesLoaded(function () {
                             newElems.show();
                             self.calcCols(true);
+                            count++;
+                            notice.pnotify({hide: false, text: refresh ? 'Adding ' + count + ' new items...' : Math.floor((count / total) * 100) + "% complete..."});
                         });
-                        count++;
-                        notice.pnotify({hide: false, text: refresh ? 'Adding '+count+' new items...' : Math.floor((count/total)*100) + "% complete..."});
                     }
-                }
-            });
-            channel.bind('ad', function(data) {
-                if(data != null) {
-                    var adModel = new App.Models.Ad(data);
+                } else if (response.type == 'ad') {
+                    var adModel = new App.Models.Ad(JSON.parse(response.data));
                     var exists = self.adCollection.get(adModel.id);
-                    if(!exists) {
+                    if (!exists) {
                         var adView = new App.Views.Ad({model: adModel, parent: self});
                         var newAd = $(adView.render().el);
                         self.adCollection.add(adView.model);
@@ -265,28 +239,31 @@
                         newAd.show();
                         self.calcCols(true);
                     }
+                } else if (response.type == 'notification') {
+                    if (response.data == -1) {
+                        self.container.imagesLoaded(function () {
+                            notice.pnotify({hide: true});
+                        });
+                        self.appModel.set({
+                            isLoading: false,
+                            currentAfter: self.collection.last().get('key'),
+                            updateInterval: setInterval(function () {
+                                self.checkUpdates();
+                            }, 60000)
+                        });
+                        self.loadMoreBtn.html('Load More');
+                        self.loadMoreBtn.css('pointer-events', 'auto');
+                    } else {
+                        total = response.data;
+                        self.appModel.set({isLoading: true});
+                        self.loadMoreBtn.html('Loading...');
+                        self.loadMoreBtn.css('pointer-events', 'none');
+                    }
                 }
-            });
-            channel.bind('notification', function(data) {
-                if(data == -1) {
-                    notice.pnotify({hide: true});
-                    self.pusher.unsubscribe(self.appModel.get('currentChannel'));
-                    self.appModel.set({
-                        isLoading: false,
-                        currentAfter: self.collection.last().get('key'),
-                        updateInterval: setInterval(function(){
-                            self.checkUpdates();
-                        }, 60000)
-                    });
-                    self.loadMoreBtn.html('Load More');
-                    self.loadMoreBtn.css('pointer-events', 'auto');
-                } else {
-                    total = data;
-                    self.appModel.set({isLoading: true});
-                    self.loadMoreBtn.html('Loading...');
-                    self.loadMoreBtn.css('pointer-events', 'none');
-                }
-            });
+            };
+            ws.onclose = function (e) {
+
+            };
         }
     });
 

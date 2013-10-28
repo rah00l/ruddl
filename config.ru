@@ -9,7 +9,6 @@ require 'redis'
 require 'digest'
 require 'yajl/json_gem'
 require 'fastimage'
-require 'pusher'
 
 Bundler.require
 
