@@ -13,10 +13,6 @@ class Ruddl < Sinatra::Base
   register Sinatra::MultiRoute
 
   configure :development, :test do
-    Pusher.app_id = '31874'
-    Pusher.key    = '5521578d0346d88fe734'
-    Pusher.secret = 'd3b3be3d1db365f4b9e1'
-
     enable :logging, :dump_errors, :raise_errors
     register Sinatra::Reloader
   end
