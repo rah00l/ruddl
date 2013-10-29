@@ -156,7 +156,7 @@ module RuddlFactory
 
     puts 'scraped_image'
     if scraped_image.nil?
-      scraped_image = "http://pagepeeker.com/thumbs.php?size=x&url=#{URI::encode(item['data']['url'])}"
+      scraped_image = "http://pagepeeker.com/thumbs.php?size=x&url=#{URI::encode(url)}"
     end
 
     scraped_image
