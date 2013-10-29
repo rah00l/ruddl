@@ -11,6 +11,7 @@ class Ruddl < Sinatra::Base
 
   register Sinatra::Synchrony
   register Sinatra::MultiRoute
+  OEmbed::Providers.register_all(:aggregators)
 
   configure :development, :test do
     enable :logging, :dump_errors, :raise_errors
