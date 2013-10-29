@@ -11,6 +11,7 @@ class Ruddl < Sinatra::Base
 
   register Sinatra::Synchrony
   register Sinatra::MultiRoute
+  OEmbed::Providers.register_all(:aggregators)
 
   configure :development, :test do
     enable :logging, :dump_errors, :raise_errors
@@ -59,7 +60,7 @@ class Ruddl < Sinatra::Base
                 adshown = true
               end
               rdoc = RuddlFactory.parse_feed_item(item, @@redis)
-              ws.send({:type => 'story', :data => rdoc.to_json}.to_json)
+              ws.send({:type => 'story', :data => rdoc.to_json}.to_json) if rdoc
             end
             ws.send({:type => 'notification', :data => -1}.to_json)
           end

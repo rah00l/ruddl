@@ -104,10 +104,30 @@ module RuddlFactory
 
   def self.parse_misc(item)
     puts "parsing misc => #{item['data']['url']}"
+    rdoc = nil
+
+    best_image = get_oembed_image(item['data']['url'])
+    best_image = get_scraped_image(item['data']['url']) if best_image.nil?
+
+    rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
+    rdoc
+  end
+
+  def self.get_oembed_image(url)
     begin
-      uri = URI(item['data']['url'])
+      resource = OEmbed::Providers.get(url)
+      resource.fields['thumbnail_url'] if resource
+      puts "found oembed"
+    rescue
+      nil
+    end
+  end
+
+  def self.get_scraped_image(url)
+    begin
+      uri = URI(url)
       images = Nokogiri::HTML(open(uri)).css('//img/@src').to_a
-      best_image = nil
+      scraped_image = nil
       #sized_images = Hash.new
       images.each do |image|
         image = image.to_s
@@ -122,7 +142,7 @@ module RuddlFactory
             #sized_images[image] = dimensions
             if not dimensions.nil?
               if (dimensions[0] >= 350 and dimensions[0]/dimensions[1] <= 2)
-                best_image = image.to_s
+                scraped_image = image.to_s
                 break
               end
             end
@@ -133,17 +153,12 @@ module RuddlFactory
       puts exception
     end
 
-    puts 'best_image'
-    if best_image.nil?
-      best_image = "http://pagepeeker.com/thumbs.php?size=x&url=#{URI::encode(item['data']['url'])}"
+    puts 'scraped_image'
+    if scraped_image.nil?
+      scraped_image = "http://pagepeeker.com/thumbs.php?size=x&url=#{URI::encode(url)}"
     end
 
-    if not best_image.nil?
-      rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
-      rdoc
-    else
-      nil
-    end
+    scraped_image
   end
 
   def self.parse_reddit(item)
