@@ -59,6 +59,7 @@
 
             this.container = $('#container');
             this.loadMoreBtn = $('#load-more');
+            this.ws = null;
 
             this.listenTo(this.appModel, 'change:currentSection', this.loadNew);
             this.listenTo(this.appModel, 'change:currentSubreddit', this.loadNew);
@@ -127,6 +128,7 @@
             this.collection.reset();
             this.adCollection.reset();
             this.container.empty();
+            this.ws.close();
             this.getStories();
         },
         loadMore: function(e) {
@@ -203,11 +205,9 @@
                 icon: 'icon-spinner icon-spin'
             });
 
-            var ws = new WebSocket(window.location.origin.replace('http','ws') + '/' + self.appModel.get('currentURL'));
-            ws.onopen = function (e) {
-
-            };
-            ws.onmessage = function (e) {
+            self.ws = new WebSocket(window.location.origin.replace('http','ws') + '/' + self.appModel.get('currentURL'));
+            self.ws.onopen = function (e) { };
+            self.ws.onmessage = function (e) {
                 var response = JSON.parse(e.data);
                 if (response.type == 'story') {
                     var storyModel = new App.Models.Story(JSON.parse(response.data));
@@ -261,9 +261,7 @@
                     }
                 }
             };
-            ws.onclose = function (e) {
-
-            };
+            self.ws.onclose = function (e) { };
         }
     });
 

@@ -107,9 +107,7 @@ module RuddlFactory
     rdoc = nil
 
     best_image = get_oembed_image(item['data']['url'])
-    if best_image.nil?
-      best_image = get_scraped_image(item['data']['url'])
-    end
+    best_image = get_scraped_image(item['data']['url']) if best_image.nil?
 
     rdoc = RuddlDoc.new(item['data']['name'], item['data']['title'], best_image, nil, nil, item['data']['url'], URI.join('http://reddit.com/', URI.encode(item['data']['permalink'])))
     rdoc
@@ -119,6 +117,7 @@ module RuddlFactory
     begin
       resource = OEmbed::Providers.get(url)
       resource.fields['thumbnail_url'] if resource
+      puts "found oembed"
     rescue
       nil
     end
